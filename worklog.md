@@ -1080,3 +1080,58 @@ Task: Fix the blank preview panel — the dev server kept crashing (OOM-killed) 
 ## Recommendation
 - For production, this app should be `bun run build` and served via `bun run start` (production mode uses far less memory). The dev server's memory usage is a development-only concern.
 - If the user needs a stable long-running preview, consider reducing the number of simultaneously-imported components or using a production build.
+
+---
+Task ID: 22 (user request — Supabase integration)
+Agent: orchestrator (main)
+Task: Integrate Supabase with the Playbeat Digital project using user-provided API keys.
+
+## Completed modifications
+
+1. **`.env.local`** — created with Supabase credentials:
+   - `NEXT_PUBLIC_SUPABASE_URL=https://rfsmvtzxeppgyvdgtltk.supabase.co`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (JWT anon key)
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (sb_publishable_ key)
+
+2. **`@supabase/supabase-js@2.111.0`** installed.
+
+3. **`src/lib/supabase.ts`** — Supabase client:
+   - Uses `createClient(url, anonKey)` with auth persistence + auto-refresh.
+   - Safe for client-side (anon key + RLS).
+
+4. **`src/hooks/use-auth.tsx`** — AuthProvider context:
+   - `useAuth()` hook exposing `user`, `loading`, `signIn`, `signUp`, `signOut`.
+   - Tracks session via `supabase.auth.getSession()` + `onAuthStateChange`.
+   - Wrapped the app in `<AuthProvider>` via `src/components/providers.tsx`.
+
+5. **`src/components/layout/auth-modal.tsx`** — premium auth modal:
+   - Sign In / Sign Up toggle with mode switching.
+   - Email + password fields with icons, validation, error display.
+   - Loading spinner during auth request.
+   - Success toasts ("Welcome back!" / "Account created! Check your email.").
+   - "Secure authentication via Supabase" trust line.
+   - Red-themed glass modal matching the Black + Red design system.
+
+6. **`src/components/layout/site-header.tsx`** — wired real auth:
+   - Login/Register button now opens the AuthModal.
+   - When logged in, shows the user's email + avatar initial in a pill (replaces the Login button).
+   - AccountMenu: shows user email when logged in, "Sign Out" menu item (red, with LogOut icon) at the bottom.
+   - AccountMenu trigger shows avatar initial when logged in.
+
+## Verification
+- `bun run lint` → 0 errors, 0 warnings.
+- Supabase connection test: `supabase.auth.getSession()` → ✅ successful (session: none).
+- REST API accessible (empty database — no tables created yet).
+- Server serves the page (200) with the auth modal wired.
+- The auth modal uses the real Supabase `signInWithPassword` and `signUp` methods.
+
+## Supabase project status
+- **Auth**: ✅ Working (email/password sign-in and sign-up).
+- **Database**: Empty (no tables). To add database features (products, orders, profiles), tables need to be created in the Supabase dashboard or via SQL.
+- **Storage**: Not configured yet.
+
+## What the user can do now
+- Click "Login / Register" in the header → auth modal opens.
+- Sign up with email/password → Supabase creates the account and sends a confirmation email.
+- Sign in with email/password → user session persists (Supabase handles tokens).
+- When logged in, the header shows the user's email; the account menu has a "Sign Out" option.

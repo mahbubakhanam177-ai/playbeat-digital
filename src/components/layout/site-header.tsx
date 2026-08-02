@@ -29,6 +29,7 @@ import {
   ArrowRight,
   User,
   History,
+  LogOut,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -39,6 +40,8 @@ import type { CategorySlug } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import LoyaltyBadge from "@/components/layout/loyalty-badge";
 import NotificationsDropdown from "@/components/layout/notifications-dropdown";
+import AuthModal from "@/components/layout/auth-modal";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Sheet,
   SheetContent,
@@ -238,6 +241,7 @@ function AccountMenu() {
   const openRewards = useStore((s) => s.openRewards);
   const openHistory = useStore((s) => s.openHistory);
   const loyaltyPoints = useStore((s) => s.loyaltyPoints);
+  const { user, signOut } = useAuth();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -246,7 +250,13 @@ function AccountMenu() {
           aria-label="Account menu"
           className="flex size-10 items-center justify-center rounded-full text-white/80 transition-all duration-200 hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
         >
-          <User className="size-5" />
+          {user ? (
+            <span className="grid size-8 place-items-center rounded-full bg-gold/15 text-xs font-bold text-gold">
+              {user.email?.[0]?.toUpperCase() ?? "U"}
+            </span>
+          ) : (
+            <User className="size-5" />
+          )}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -256,10 +266,18 @@ function AccountMenu() {
       >
         <div className="flex items-center gap-3 px-3 py-3">
           <div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-gold/25 to-azure/20 ring-1 ring-inset ring-white/[0.08]">
-            <User className="size-4 text-white/70" />
+            {user ? (
+              <span className="text-sm font-bold text-gold">
+                {user.email?.[0]?.toUpperCase() ?? "U"}
+              </span>
+            ) : (
+              <User className="size-4 text-white/70" />
+            )}
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-white">Welcome to Playbeat</span>
+            <span className="text-sm font-semibold text-white">
+              {user ? user.email : "Welcome to Playbeat"}
+            </span>
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <Coins className="size-3 text-gold" />
               <span className="font-semibold text-gold">{loyaltyPoints.toLocaleString()}</span> loyalty points
@@ -287,6 +305,18 @@ function AccountMenu() {
             </DropdownMenuItem>
           </React.Fragment>
         ))}
+        {user && (
+          <>
+            <DropdownMenuSeparator className="bg-white/[0.06]" />
+            <DropdownMenuItem
+              onSelect={() => signOut()}
+              className="cursor-pointer rounded-md px-2.5 py-2 text-sm text-danger outline-none focus:bg-danger/10 focus:text-danger data-[highlighted]:bg-danger/10 data-[highlighted]:text-danger"
+            >
+              <LogOut className="size-4" />
+              <span>Sign Out</span>
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -582,6 +612,8 @@ function MegaNavRegion({
 export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
 
   const cart = useStore((s) => s.cart);
   const wishlist = useStore((s) => s.wishlist);
@@ -590,6 +622,7 @@ export default function SiteHeader() {
   const openWishlist = useStore((s) => s.openWishlist);
   const currency = useStore((s) => s.currency);
   const promoDismissed = useStore((s) => s.promoDismissed);
+  const { user } = useAuth();
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlist.length;
@@ -810,17 +843,35 @@ export default function SiteHeader() {
             )}
           </div>
 
-          {/* Login / Register button (sm+) */}
-          <Button
-            type="button"
-            className="hidden h-10 gap-1.5 rounded-full bg-gold px-4 text-sm font-semibold text-black transition-all hover:bg-gold/90 hover:shadow-[0_0_24px_-6px_rgba(255,213,79,0.6)] sm:inline-flex"
-          >
-            <LogIn className="size-4" />
-            <span className="hidden lg:inline">Login / Register</span>
-            <span className="lg:hidden">Login</span>
-          </Button>
+          {/* Login / Register button OR user email (sm+) */}
+          {user ? (
+            <div className="hidden items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 sm:flex">
+              <span className="grid size-6 place-items-center rounded-full bg-gold/15 text-[10px] font-bold text-gold">
+                {user.email?.[0]?.toUpperCase() ?? "U"}
+              </span>
+              <span className="max-w-[120px] truncate text-xs font-medium text-white">
+                {user.email}
+              </span>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              onClick={() => {
+                setAuthMode("signin");
+                setAuthOpen(true);
+              }}
+              className="hidden h-10 gap-1.5 rounded-full bg-gold px-4 text-sm font-semibold text-black transition-all hover:bg-gold/90 hover:shadow-[0_0_24px_-6px_rgba(255,30,30,0.6)] sm:inline-flex"
+            >
+              <LogIn className="size-4" />
+              <span className="hidden lg:inline">Login / Register</span>
+              <span className="lg:hidden">Login</span>
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Auth modal */}
+      <AuthModal open={authOpen} onOpenChange={setAuthOpen} defaultMode={authMode} />
 
       {/* ============ ROW 3 (bottom): nav menu with dropdowns (lg+) ============ */}
       <nav
