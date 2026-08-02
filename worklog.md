@@ -1193,3 +1193,32 @@ Task: Verify seeded data, push code to GitHub.
 ## Security warning
 - The GitHub PAT was shared in plain text. User should revoke it at:
   https://github.com/settings/tokens
+
+---
+Task ID: 25 (Enterprise Admin Panel)
+Agent: orchestrator (main)
+Task: Build enterprise-grade admin panel at /admin with password mahbuba1213, connected to Supabase.
+
+## Completed modifications
+
+1. **Admin auth** (`src/lib/admin-auth.ts`): password `mahbuba1213` embedded in code, session stored in sessionStorage.
+
+2. **Admin data layer** (`src/lib/admin-data.ts`): CRUD functions for Supabase — getDashboardStats, fetchProducts, createProduct, updateProduct, deleteProduct, fetchOrders, fetchCategories, fetchBlogPosts.
+
+3. **Admin page** (`src/app/admin/page.tsx` — 629 lines): complete enterprise admin panel:
+   - **Login gate**: premium glassmorphism login with password input.
+   - **Sidebar**: 30 menu items across 6 groups (Overview, Catalog, Sales, Content, Growth, System) — Dashboard, Analytics, Activity, Products, Categories, Collections, Brands, Media, Orders, Customers, Subscriptions, Coupons, Reviews, Blog, Pages, Navigation, Forms, Messages, Newsletter, Marketing, SEO, Automation, Integrations, Emails, Users & Roles, Appearance, Settings, Developer.
+   - **Dashboard**: 8 stat cards (revenue, visitors, conversion, orders, products, downloads, subscribers), sales chart (12-month bar chart), traffic sources (progress bars), recent orders list, popular products, realtime activity feed.
+   - **Products**: full table with search, add product modal (name, slug, category, price, old price, rating, emoji, flags), delete — connected to Supabase.
+   - **Settings**: tabbed interface (General, Payments, SEO, Email, Domains, Analytics, Security) — payment gateways (Stripe, PayPal, Paddle, Lemon Squeezy, Manual Bank, Crypto, COD), manual payment methods, SEO config.
+   - **Command palette** (Ctrl+K): fuzzy search across all admin sections.
+   - **Premium dark UI**: glassmorphism, animated gradients, Framer Motion transitions, gold (red) accent, responsive with mobile sidebar.
+
+## Build & deploy
+- `bun run lint` → 0 errors, 0 warnings.
+- `bun run build` → ✅ compiled successfully, `/admin` route generated as static page.
+- Pushed to GitHub → Vercel auto-deploys.
+
+## Access
+- **URL**: https://playbeat-digital.vercel.app/admin
+- **Password**: mahbuba1213
