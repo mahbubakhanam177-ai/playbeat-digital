@@ -34,7 +34,7 @@ import { useStore } from "@/lib/store";
 import { formatPrice } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { POINT_REWARDS } from "@/lib/loyalty";
+import { POINT_REWARDS, getCodeDiscount } from "@/lib/loyalty";
 
 /* ----------------------------- Types ----------------------------- */
 type Step = 0 | 1 | 2 | 3; // details, payment, processing, success
@@ -64,6 +64,7 @@ export default function CheckoutModal() {
     currency,
     clearCart,
     addPoints,
+    addNotification,
     redeemedRewards,
   } = useStore();
   const { toast } = useToast();
@@ -91,7 +92,13 @@ export default function CheckoutModal() {
   const itemCount = cart.reduce((s, i) => s + i.quantity, 0);
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   const cryptoDiscount = method === "crypto" ? subtotal * 0.05 : 0;
-  const couponDiscount = couponApplied ? subtotal * 0.1 : 0;
+  // Redeemed codes give a flat USD discount; manual "PLAYBEAT10" gives 10%.
+  const isRedeemedCode = couponApplied && /^PB-/.test(coupon);
+  const couponDiscount = couponApplied
+    ? isRedeemedCode
+      ? getCodeDiscount(coupon)
+      : subtotal * 0.1
+    : 0;
   const total = Math.max(0, subtotal - cryptoDiscount - couponDiscount);
 
   const handleApplyCoupon = () => {
@@ -101,16 +108,28 @@ export default function CheckoutModal() {
   };
 
   const applyRedeemedCode = (code: string) => {
+    const discount = getCodeDiscount(code);
     setCoupon(code);
     setCouponApplied(true);
-    toast({ title: "Reward code applied", description: `${code} — 10% discount added.` });
+    toast({
+      title: "Reward code applied",
+      description: `${code} — ${formatPrice(discount, currency)} off your order.`,
+    });
   };
 
   const handlePay = () => {
+    const orderTotal = total;
+    const orderCount = itemCount;
     setStep(2); // processing
     setTimeout(() => {
       setStep(3); // success
       addPoints(POINT_REWARDS.checkout, "checkout");
+      addNotification({
+        type: "order",
+        title: "Order confirmed! 🎉",
+        message: `${orderCount} item${orderCount === 1 ? "" : "s"} · ${formatPrice(orderTotal, currency)} — instant delivery activated. +${POINT_REWARDS.checkout} pts earned.`,
+        emoji: "📦",
+      });
       toast({
         title: `+${POINT_REWARDS.checkout} loyalty points earned!`,
         description: "Thanks for your order — points added to your account.",
@@ -290,7 +309,9 @@ export default function CheckoutModal() {
                   {couponApplied && (
                     <div className="flex items-center gap-1.5 rounded-lg bg-success/10 px-2.5 py-1.5 text-xs text-success">
                       <Check className="size-3.5" />
-                      Coupon applied — 10% discount active
+                      {isRedeemedCode
+                        ? `Reward code applied — ${formatPrice(couponDiscount, currency)} off`
+                        : "Coupon applied — 10% discount active"}
                     </div>
                   )}
                 </div>
@@ -511,7 +532,7 @@ export default function CheckoutModal() {
             <div className="mb-3 space-y-1">
               {couponApplied && (
                 <div className="flex items-center justify-between text-xs text-success">
-                  <span>Coupon (10%)</span>
+                  <span>{isRedeemedCode ? "Reward code" : "Coupon (10%)"}</span>
                   <span>−{formatPrice(couponDiscount, currency)}</span>
                 </div>
               )}

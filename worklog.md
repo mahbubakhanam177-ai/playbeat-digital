@@ -827,3 +827,60 @@ Supporting changes:
 4. Map each redeemed code to its actual discount value (not flat 10%).
 5. Apply FilterSortBar to a dedicated "All Products" / "Browse" section.
 6. A notifications dropdown (order updates, deal alerts, points milestones).
+
+---
+Task ID: 16 (cron review round 9 — notifications dropdown + per-code checkout discounts)
+Agent: orchestrator (webDevReview cron)
+Task: QA the live site with agent-browser, then build a notifications dropdown and fix the flat-10% checkout coupon issue with per-code discount mapping.
+
+## Current project status (assessment)
+- Site is STABLE: `bun run lint` clean, dev log shows `GET / 200`, no runtime/console errors.
+- All 22 sections + all overlays from rounds 1-8 intact and working.
+- No bugs found during QA. Proceeded to feature additions per the mandatory directives.
+
+## Completed modifications (this round)
+Added 2 features (all browser-verified):
+
+1. **Notifications Dropdown** (`src/components/layout/notifications-dropdown.tsx`) — a premium notification center accessible via a bell icon in the header:
+   - **Bell button** with an animated unread-count badge (danger red, spring-animated on count change) + a pinging dot when unread > 0.
+   - **Dropdown panel** (shadcn DropdownMenu, w-80) with: header ("Notifications" + "N new" badge + "Mark all read" button), scrollable list (max 360px), footer ("Clear all" + "Browse deals →").
+   - **5 notification types** with color-coded icons: order (azure/ShoppingBag), deal (gold/Tag), points (gold/Coins), wishlist (rose/Heart), system (sky/Info). Each shows an emoji or icon swatch, title, message, and relative timestamp ("just now", "5m ago", "2h ago").
+   - **Unread state**: unread notifications have a gold dot on the left + subtle gold tint background. Clicking a notification marks it read + routes to relevant view (order→cart, points→rewards).
+   - **Empty state**: "You're all caught up!" with a muted bell icon.
+   - Animated enter/exit per notification (Framer Motion layout + AnimatePresence).
+   - Seeds with 2 default notifications on first visit (Welcome + Flash Sale).
+
+2. **Per-code checkout discount mapping** — fixed the flat-10% issue so each redeemed code maps to its actual discount value:
+   - **Loyalty helper** (`src/lib/loyalty.ts`): added `flatAmount` to each Reward ($5/$15/$40/$30). Added `getCodeDiscount(code)` helper that parses the `PB-{ID}-{random}` format and returns the reward's flat USD discount.
+   - **CheckoutModal**: detects if the applied coupon is a redeemed code (`/^PB-/` test). Redeemed codes apply a flat USD discount (e.g. $5); manual "PLAYBEAT10" still applies 10%. Confirmation bar + footer label adapt: "Reward code applied — $5.00 off" / "Reward code −$5.00" vs "Coupon (10%)".
+
+3. **Auto-generated notifications** on key events:
+   - **Wishlist add** (ProductCard): generates a "wishlist" notification ("Saved to wishlist · +3 pts earned" with the product emoji).
+   - **Checkout success** (CheckoutModal): generates an "order" notification ("Order confirmed! 🎉 · N items · $X — instant delivery activated. +50 pts earned" with 📦 emoji).
+
+Supporting changes:
+- **Store** (`src/lib/store.ts`): added `AppNotification` interface (type/title/message/ts/read/emoji), `notifications` array (seeded with 2 defaults, max 30), `addNotification`, `markNotificationRead`, `markAllNotificationsRead`, `clearNotifications`, `isNotifOpen`/`openNotif`/`closeNotif`. `notifications` persisted.
+- **ProductCard**: added `addNotification` to the store destructure; generates a wishlist notification on add.
+- **CheckoutModal**: added `addNotification` to the store destructure; generates an order notification on payment success.
+- **SiteHeader**: imported and rendered `<NotificationsDropdown />` in the right-actions row (sm+), between the loyalty badge and wishlist.
+
+## Verification results
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: no page errors, no console warnings.
+- **Notifications bell**: present in header showing "2 unread" (default Welcome + Flash Sale notifications).
+- **Dropdown**: clicking the bell opens the panel with both default notifications, "Mark all read", and "Browse deals" footer.
+- **Auto-generation**: wishlisted an item → unread count went 2 → 3; opened dropdown → "Saved to wishlist" notification with "+3 pts earned" present.
+- **Per-code discount**: earned 102 pts → redeemed $5 reward (code `PB-R5-4JYAJE`) → opened checkout → applied the code chip → confirmation "Reward code applied — $5.00 off" + footer "Reward code −$5.00" + "Total $106.97" (subtotal ~$111.97 − $5). Verified the flat $5 discount applies correctly (not 10%).
+- All pre-existing features unaffected.
+
+## Unresolved issues / risks
+- None blocking. The notifications are frontend-only (no real-time push). A real implementation would use websockets or Server-Sent Events for live order/deal updates.
+- The `getCodeDiscount` helper trusts the code format; a real backend would validate codes server-side before applying discounts.
+
+## Priority recommendations for next phase
+1. AI-generated product imagery to replace gradient+emoji covers (image-generation skill).
+2. ThemeProvider (next-themes) for proper light/dark toggle.
+3. Product detail route (/product/[id]) — data + Quick View ready to reuse.
+4. Apply FilterSortBar to a dedicated "All Products" / "Browse" section.
+5. A notification for tier upgrades (when points cross Silver/Gold/Platinum thresholds).
+6. Mark notifications as read when the dropdown opens (auto-read on view).

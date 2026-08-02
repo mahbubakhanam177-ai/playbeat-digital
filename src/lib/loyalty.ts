@@ -64,6 +64,8 @@ export interface Reward {
   desc: string;
   emoji: string;
   gradient: string;
+  /** Flat USD discount amount applied at checkout (0 for free-product reward). */
+  flatAmount: number;
 }
 
 export const REWARDS: Reward[] = [
@@ -75,6 +77,7 @@ export const REWARDS: Reward[] = [
     desc: "Flat $5 off your next order",
     emoji: "🎫",
     gradient: "linear-gradient(135deg, #4CAF50 0%, #143A18 100%)",
+    flatAmount: 5,
   },
   {
     id: "r15",
@@ -84,6 +87,7 @@ export const REWARDS: Reward[] = [
     desc: "Flat $15 off orders over $20",
     emoji: "💰",
     gradient: "linear-gradient(135deg, #FFD54F 0%, #8A6300 100%)",
+    flatAmount: 15,
   },
   {
     id: "r40",
@@ -93,6 +97,7 @@ export const REWARDS: Reward[] = [
     desc: "Flat $40 off orders over $50",
     emoji: "💎",
     gradient: "linear-gradient(135deg, #4D8DFF 0%, #0E2A66 100%)",
+    flatAmount: 40,
   },
   {
     id: "rfree",
@@ -102,5 +107,19 @@ export const REWARDS: Reward[] = [
     desc: "Any product up to $30 value",
     emoji: "🎁",
     gradient: "linear-gradient(135deg, #B388FF 0%, #3B1A78 100%)",
+    flatAmount: 30,
   },
 ];
+
+/**
+ * Look up the flat USD discount for a redeemed code.
+ * Codes are formatted as `PB-{ID}-{random}` e.g. `PB-R5-ABC123`.
+ * Returns 0 for unknown codes (falls back to no discount).
+ */
+export function getCodeDiscount(code: string): number {
+  const match = code.match(/^PB-(.+?)-/);
+  if (!match) return 0;
+  const rewardId = match[1].toLowerCase();
+  const reward = REWARDS.find((r) => r.id === rewardId);
+  return reward?.flatAmount ?? 0;
+}

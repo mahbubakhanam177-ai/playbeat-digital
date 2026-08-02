@@ -38,6 +38,7 @@ import { formatPrice } from "@/lib/format";
 import type { CategorySlug } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import LoyaltyBadge from "@/components/layout/loyalty-badge";
+import NotificationsDropdown from "@/components/layout/notifications-dropdown";
 import {
   Sheet,
   SheetContent,
@@ -784,6 +785,11 @@ export default function SiteHeader() {
           {/* Loyalty badge (md+) */}
           <div className="hidden md:block">
             <LoyaltyBadge />
+          </div>
+
+          {/* Notifications (sm+) */}
+          <div className="hidden sm:block">
+            <NotificationsDropdown />
           </div>
 
           {/* Wishlist */}

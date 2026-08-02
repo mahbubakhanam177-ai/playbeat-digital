@@ -29,7 +29,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onQuickView, index = 0 }: ProductCardProps) {
-  const { currency, addToCart, openCart, toggleWishlist, isWishlisted, openQuickView, toggleCompare, isComparing, addPoints } = useStore();
+  const { currency, addToCart, openCart, toggleWishlist, isWishlisted, openQuickView, toggleCompare, isComparing, addPoints, addNotification } = useStore();
   const { toast } = useToast();
   const wished = isWishlisted(product.id);
   const comparing = isComparing(product.id);
@@ -135,6 +135,12 @@ export function ProductCard({ product, onQuickView, index = 0 }: ProductCardProp
               toggleWishlist(product.id);
               if (!wished) {
                 addPoints(POINT_REWARDS.wishlist, "wishlist");
+                addNotification({
+                  type: "wishlist",
+                  title: "Saved to wishlist",
+                  message: `${product.name} · +${POINT_REWARDS.wishlist} pts earned`,
+                  emoji: product.emoji,
+                });
                 toast({
                   title: "Saved to wishlist",
                   description: `${product.name} · +${POINT_REWARDS.wishlist} pts`,

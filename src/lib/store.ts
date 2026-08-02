@@ -30,6 +30,16 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface AppNotification {
+  id: string;
+  type: "order" | "deal" | "points" | "system" | "wishlist";
+  title: string;
+  message: string;
+  ts: number;
+  read: boolean;
+  emoji?: string;
+}
+
 interface StoreState {
   /* Currency */
   currency: CurrencyCode;
@@ -111,6 +121,16 @@ interface StoreState {
   /* Cookie consent */
   cookieConsent: "accepted" | "essential" | null;
   setCookieConsent: (v: "accepted" | "essential") => void;
+
+  /* Notifications */
+  notifications: AppNotification[];
+  addNotification: (n: Omit<AppNotification, "id" | "ts" | "read">) => void;
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
+  clearNotifications: () => void;
+  isNotifOpen: boolean;
+  openNotif: () => void;
+  closeNotif: () => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -251,6 +271,46 @@ export const useStore = create<StoreState>()(
 
       cookieConsent: null,
       setCookieConsent: (v) => set({ cookieConsent: v }),
+
+      notifications: [
+        {
+          id: "welcome-1",
+          type: "system",
+          title: "Welcome to Playbeat Digital!",
+          message: "Explore 4,000+ digital products with instant delivery.",
+          ts: Date.now(),
+          read: false,
+          emoji: "👋",
+        },
+        {
+          id: "deal-1",
+          type: "deal",
+          title: "Flash Sale Live Now",
+          message: "Up to 60% off AI Tools & Bundles — ends today!",
+          ts: Date.now() - 600000,
+          read: false,
+          emoji: "⚡",
+        },
+      ],
+      addNotification: (n) =>
+        set((s) => ({
+          notifications: [
+            { ...n, id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, ts: Date.now(), read: false },
+            ...s.notifications,
+          ].slice(0, 30),
+        })),
+      markNotificationRead: (id) =>
+        set((s) => ({
+          notifications: s.notifications.map((n) =>
+            n.id === id ? { ...n, read: true } : n
+          ),
+        })),
+      markAllNotificationsRead: () =>
+        set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
+      clearNotifications: () => set({ notifications: [] }),
+      isNotifOpen: false,
+      openNotif: () => set({ isNotifOpen: true }),
+      closeNotif: () => set({ isNotifOpen: false }),
     }),
     {
       name: "playbeat-store",
@@ -265,6 +325,7 @@ export const useStore = create<StoreState>()(
         redeemedRewards: s.redeemedRewards,
         pointsHistory: s.pointsHistory,
         cookieConsent: s.cookieConsent,
+        notifications: s.notifications,
       }),
     }
   )
