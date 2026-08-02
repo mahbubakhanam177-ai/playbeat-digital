@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
  */
 export default function LoyaltyBadge() {
   const points = useStore((s) => s.loyaltyPoints);
+  const openRewards = useStore((s) => s.openRewards);
   const [open, setOpen] = React.useState(false);
   const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -174,8 +175,17 @@ export default function LoyaltyBadge() {
               </div>
             </div>
 
-            {/* Footer hint */}
-            <div className="border-t border-white/[0.06] bg-white/[0.02] px-4 py-2.5">
+            {/* Footer: redeem + hint */}
+            <div className="border-t border-white/[0.06] bg-white/[0.02] p-3">
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  openRewards();
+                }}
+                className="mb-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-gold py-2 text-xs font-semibold text-black transition-all hover:bg-gold/90"
+              >
+                <Gift className="size-3.5" /> Redeem rewards
+              </button>
               <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <ChevronRight className="size-3 text-gold" />
                 Earn points: cart (+5), wishlist (+3), checkout (+50)

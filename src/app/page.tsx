@@ -13,6 +13,7 @@ import CheckoutModal from "@/components/layout/checkout-modal";
 import CompareDrawer from "@/components/layout/compare-drawer";
 import CompareBar from "@/components/layout/compare-bar";
 import CookieConsent from "@/components/layout/cookie-consent";
+import RewardsModal from "@/components/layout/rewards-modal";
 import Hero from "@/components/sections/hero";
 import { TrustBadges, Categories } from "@/components/sections/trust-categories";
 import {
@@ -89,6 +90,7 @@ export default function Home() {
       <CompareBar />
       <SocialProofToast />
       <CookieConsent />
+      <RewardsModal />
     </div>
   );
 }

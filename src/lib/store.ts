@@ -95,7 +95,13 @@ interface StoreState {
   /* Loyalty / rewards */
   loyaltyPoints: number;
   addPoints: (n: number, reason?: string) => void;
+  spendPoints: (n: number) => boolean;
   resetPoints: () => void;
+  redeemedRewards: string[];
+  addRedeemedReward: (code: string) => void;
+  isRewardsOpen: boolean;
+  openRewards: () => void;
+  closeRewards: () => void;
 
   /* Cookie consent */
   cookieConsent: "accepted" | "essential" | null;
@@ -207,7 +213,19 @@ export const useStore = create<StoreState>()(
       loyaltyPoints: 0,
       addPoints: (n, _reason) =>
         set((s) => ({ loyaltyPoints: s.loyaltyPoints + n })),
+      spendPoints: (n) => {
+        const current = get().loyaltyPoints;
+        if (current < n) return false;
+        set((s) => ({ loyaltyPoints: s.loyaltyPoints - n }));
+        return true;
+      },
       resetPoints: () => set({ loyaltyPoints: 0 }),
+      redeemedRewards: [],
+      addRedeemedReward: (code) =>
+        set((s) => ({ redeemedRewards: [code, ...s.redeemedRewards].slice(0, 20) })),
+      isRewardsOpen: false,
+      openRewards: () => set({ isRewardsOpen: true }),
+      closeRewards: () => set({ isRewardsOpen: false }),
 
       cookieConsent: null,
       setCookieConsent: (v) => set({ cookieConsent: v }),
@@ -222,6 +240,7 @@ export const useStore = create<StoreState>()(
         promoDismissed: s.promoDismissed,
         compareList: s.compareList,
         loyaltyPoints: s.loyaltyPoints,
+        redeemedRewards: s.redeemedRewards,
         cookieConsent: s.cookieConsent,
       }),
     }

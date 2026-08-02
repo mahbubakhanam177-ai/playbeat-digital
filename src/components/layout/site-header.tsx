@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Coins,
   DollarSign,
+  Gift,
   Heart,
   LayoutDashboard,
   LogIn,
@@ -72,6 +73,7 @@ const ACCOUNT_MENU: { label: string; icon: React.ElementType }[] = [
   { label: "Sign In", icon: LogIn },
   { label: "My Orders", icon: Package },
   { label: "Dashboard", icon: LayoutDashboard },
+  { label: "Rewards & Points", icon: Gift },
   { label: "Affiliate Earnings", icon: DollarSign },
   { label: "Settings", icon: Settings },
 ];
@@ -224,6 +226,8 @@ function CurrencySwitcher({ compact = false }: { compact?: boolean }) {
 
 /* --------------------------- Account Menu --------------------------- */
 function AccountMenu() {
+  const openRewards = useStore((s) => s.openRewards);
+  const loyaltyPoints = useStore((s) => s.loyaltyPoints);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -246,18 +250,29 @@ function AccountMenu() {
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold text-white">Welcome to Playbeat</span>
-            <span className="text-xs text-muted-foreground">Sign in to access your library</span>
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Coins className="size-3 text-gold" />
+              <span className="font-semibold text-gold">{loyaltyPoints.toLocaleString()}</span> loyalty points
+            </span>
           </div>
         </div>
         <DropdownMenuSeparator className="bg-white/[0.06]" />
         {ACCOUNT_MENU.map((item, idx) => (
           <React.Fragment key={item.label}>
-            {(idx === 1 || idx === 3) && (
+            {(idx === 1 || idx === 4) && (
               <DropdownMenuSeparator className="bg-white/[0.06]" />
             )}
-            <DropdownMenuItem className="cursor-pointer rounded-md px-2.5 py-2 text-sm text-white/80 outline-none focus:bg-white/[0.06] focus:text-white data-[highlighted]:bg-white/[0.06] data-[highlighted]:text-white">
-              <item.icon className="size-4 text-muted-foreground" />
+            <DropdownMenuItem
+              onSelect={() => {
+                if (item.label === "Rewards & Points") openRewards();
+              }}
+              className="cursor-pointer rounded-md px-2.5 py-2 text-sm text-white/80 outline-none focus:bg-white/[0.06] focus:text-white data-[highlighted]:bg-white/[0.06] data-[highlighted]:text-white"
+            >
+              <item.icon className={cn("size-4", item.label === "Rewards & Points" ? "text-gold" : "text-muted-foreground")} />
               <span>{item.label}</span>
+              {item.label === "Rewards & Points" && (
+                <span className="ml-auto text-[10px] font-bold text-gold">{loyaltyPoints.toLocaleString()} pts</span>
+              )}
             </DropdownMenuItem>
           </React.Fragment>
         ))}

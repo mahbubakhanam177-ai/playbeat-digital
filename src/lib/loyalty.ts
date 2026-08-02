@@ -54,3 +54,53 @@ export const POINT_REWARDS = {
   checkout: 50,
   newsletter: 25,
 } as const;
+
+/* Rewards that can be redeemed with points */
+export interface Reward {
+  id: string;
+  name: string;
+  cost: number;
+  discount: string; // human-readable discount
+  desc: string;
+  emoji: string;
+  gradient: string;
+}
+
+export const REWARDS: Reward[] = [
+  {
+    id: "r5",
+    name: "$5 Off Coupon",
+    cost: 100,
+    discount: "$5 OFF",
+    desc: "Flat $5 off your next order",
+    emoji: "🎫",
+    gradient: "linear-gradient(135deg, #4CAF50 0%, #143A18 100%)",
+  },
+  {
+    id: "r15",
+    name: "$15 Off Coupon",
+    cost: 250,
+    discount: "$15 OFF",
+    desc: "Flat $15 off orders over $20",
+    emoji: "💰",
+    gradient: "linear-gradient(135deg, #FFD54F 0%, #8A6300 100%)",
+  },
+  {
+    id: "r40",
+    name: "$40 Off Coupon",
+    cost: 500,
+    discount: "$40 OFF",
+    desc: "Flat $40 off orders over $50",
+    emoji: "💎",
+    gradient: "linear-gradient(135deg, #4D8DFF 0%, #0E2A66 100%)",
+  },
+  {
+    id: "rfree",
+    name: "Free Product",
+    cost: 800,
+    discount: "FREE",
+    desc: "Any product up to $30 value",
+    emoji: "🎁",
+    gradient: "linear-gradient(135deg, #B388FF 0%, #3B1A78 100%)",
+  },
+];
