@@ -1046,3 +1046,37 @@ Every `gold` token now resolves to brand red:
 - `.text-gradient-gold` → red gradient text
 - `.glow-gold` → red glow shadow
 - Scrollbar thumb → red
+
+---
+Task ID: 21 (user report — blank preview / dev server stability)
+Agent: orchestrator (main)
+Task: Fix the blank preview panel — the dev server kept crashing (OOM-killed) after the Black + Red color system change.
+
+## Root cause
+- The app has grown to 92 source files across 11 rounds of feature additions.
+- Next.js 16's Turbopack dev server spikes to ~30GB virtual memory / ~2GB RSS during compilation.
+- The container has 4GB RAM with a 4GB cgroup limit. The OOM killer kills `next-server` after ~30-90s.
+- This was borderline before the CSS change; any recompile now triggers OOM.
+
+## Fix applied
+- **package.json** `dev` script updated from `next dev -p 3000` (Turbopack) to:
+  `NODE_OPTIONS='--max-old-space-size=512 --max-semi-space-size=16' next dev -p 3000 --webpack`
+  - `--webpack`: uses webpack instead of Turbopack (lower memory, no separate Rust processes).
+  - `--max-old-space-size=512`: limits V8 heap to 512MB (prevents virtual memory blowup).
+  - `--max-semi-space-size=16`: reduces young-generation memory pressure.
+- This extends server lifetime from ~30s to ~60-90s per restart.
+
+## Current status
+- Server starts and serves the page correctly (200, correct title, red theme renders).
+- The server still dies after ~60-90s due to cumulative memory growth from serving requests.
+- **The preview IS visible** when the server is up — the user can see the Black + Red themed site.
+- If the preview goes blank again, the server needs to be restarted (it auto-restarts if a loop is running, but the loop itself can be killed by OOM too).
+
+## Verification
+- `curl http://localhost:3000/` → 200, `<title>Playbeat Digital — Premium Digital Marketplace</title>` ✓
+- Red theme confirmed (Login button bg = `rgb(255, 30, 30)` = `#FF1E1E`).
+- Lint clean.
+
+## Recommendation
+- For production, this app should be `bun run build` and served via `bun run start` (production mode uses far less memory). The dev server's memory usage is a development-only concern.
+- If the user needs a stable long-running preview, consider reducing the number of simultaneously-imported components or using a production build.
