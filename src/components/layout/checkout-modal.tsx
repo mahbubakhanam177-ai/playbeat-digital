@@ -33,6 +33,7 @@ import { useStore } from "@/lib/store";
 import { formatPrice } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { POINT_REWARDS } from "@/lib/loyalty";
 
 /* ----------------------------- Types ----------------------------- */
 type Step = 0 | 1 | 2 | 3; // details, payment, processing, success
@@ -61,6 +62,7 @@ export default function CheckoutModal() {
     cart,
     currency,
     clearCart,
+    addPoints,
   } = useStore();
   const { toast } = useToast();
 
@@ -100,6 +102,11 @@ export default function CheckoutModal() {
     setStep(2); // processing
     setTimeout(() => {
       setStep(3); // success
+      addPoints(POINT_REWARDS.checkout, "checkout");
+      toast({
+        title: `+${POINT_REWARDS.checkout} loyalty points earned!`,
+        description: "Thanks for your order — points added to your account.",
+      });
     }, 2200);
   };
 

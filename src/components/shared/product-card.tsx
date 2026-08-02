@@ -20,6 +20,7 @@ import { useStore } from "@/lib/store";
 import { formatPrice, discountPct } from "@/lib/format";
 import type { Product } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
+import { POINT_REWARDS } from "@/lib/loyalty";
 
 interface ProductCardProps {
   product: Product;
@@ -28,7 +29,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onQuickView, index = 0 }: ProductCardProps) {
-  const { currency, addToCart, openCart, toggleWishlist, isWishlisted, openQuickView, toggleCompare, isComparing } = useStore();
+  const { currency, addToCart, openCart, toggleWishlist, isWishlisted, openQuickView, toggleCompare, isComparing, addPoints } = useStore();
   const { toast } = useToast();
   const wished = isWishlisted(product.id);
   const comparing = isComparing(product.id);
@@ -54,8 +55,9 @@ export function ProductCard({ product, onQuickView, index = 0 }: ProductCardProp
       image: product.emoji,
       category: product.category,
     });
+    addPoints(POINT_REWARDS.addToCart, "add to cart");
     setAdded(true);
-    toast({ title: "Added to cart", description: product.name });
+    toast({ title: "Added to cart", description: `${product.name} · +${POINT_REWARDS.addToCart} pts` });
     setTimeout(() => setAdded(false), 1400);
   };
 
@@ -131,10 +133,18 @@ export function ProductCard({ product, onQuickView, index = 0 }: ProductCardProp
             onClick={(e) => {
               e.stopPropagation();
               toggleWishlist(product.id);
-              toast({
-                title: wished ? "Removed from wishlist" : "Saved to wishlist",
-                description: product.name,
-              });
+              if (!wished) {
+                addPoints(POINT_REWARDS.wishlist, "wishlist");
+                toast({
+                  title: "Saved to wishlist",
+                  description: `${product.name} · +${POINT_REWARDS.wishlist} pts`,
+                });
+              } else {
+                toast({
+                  title: "Removed from wishlist",
+                  description: product.name,
+                });
+              }
             }}
             className={cn(
               "grid size-9 place-items-center rounded-full border backdrop-blur-md transition-all",

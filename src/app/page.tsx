@@ -12,6 +12,7 @@ import WishlistDrawer from "@/components/layout/wishlist-drawer";
 import CheckoutModal from "@/components/layout/checkout-modal";
 import CompareDrawer from "@/components/layout/compare-drawer";
 import CompareBar from "@/components/layout/compare-bar";
+import CookieConsent from "@/components/layout/cookie-consent";
 import Hero from "@/components/sections/hero";
 import { TrustBadges, Categories } from "@/components/sections/trust-categories";
 import {
@@ -87,6 +88,7 @@ export default function Home() {
       <BackToTop />
       <CompareBar />
       <SocialProofToast />
+      <CookieConsent />
     </div>
   );
 }

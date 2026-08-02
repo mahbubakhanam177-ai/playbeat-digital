@@ -35,6 +35,7 @@ import { NAV_LINKS, CATEGORIES, PRODUCTS } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
 import type { CategorySlug } from "@/lib/data";
 import { Button } from "@/components/ui/button";
+import LoyaltyBadge from "@/components/layout/loyalty-badge";
 import {
   Sheet,
   SheetContent,
@@ -759,6 +760,11 @@ export default function SiteHeader() {
           {/* Currency switcher (md+) */}
           <div className="hidden md:block">
             <CurrencySwitcher />
+          </div>
+
+          {/* Loyalty badge (md+) */}
+          <div className="hidden md:block">
+            <LoyaltyBadge />
           </div>
 
           {/* Wishlist */}

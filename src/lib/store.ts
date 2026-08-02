@@ -91,6 +91,15 @@ interface StoreState {
   isCompareOpen: boolean;
   openCompare: () => void;
   closeCompare: () => void;
+
+  /* Loyalty / rewards */
+  loyaltyPoints: number;
+  addPoints: (n: number, reason?: string) => void;
+  resetPoints: () => void;
+
+  /* Cookie consent */
+  cookieConsent: "accepted" | "essential" | null;
+  setCookieConsent: (v: "accepted" | "essential") => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -194,6 +203,14 @@ export const useStore = create<StoreState>()(
       isCompareOpen: false,
       openCompare: () => set({ isCompareOpen: true }),
       closeCompare: () => set({ isCompareOpen: false }),
+
+      loyaltyPoints: 0,
+      addPoints: (n, _reason) =>
+        set((s) => ({ loyaltyPoints: s.loyaltyPoints + n })),
+      resetPoints: () => set({ loyaltyPoints: 0 }),
+
+      cookieConsent: null,
+      setCookieConsent: (v) => set({ cookieConsent: v }),
     }),
     {
       name: "playbeat-store",
@@ -204,6 +221,8 @@ export const useStore = create<StoreState>()(
         recentlyViewed: s.recentlyViewed,
         promoDismissed: s.promoDismissed,
         compareList: s.compareList,
+        loyaltyPoints: s.loyaltyPoints,
+        cookieConsent: s.cookieConsent,
       }),
     }
   )
