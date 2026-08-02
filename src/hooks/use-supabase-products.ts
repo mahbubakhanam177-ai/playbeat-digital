@@ -68,7 +68,6 @@ export function useSupabaseProducts(filter?: (p: Product) => boolean) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { products, loading };
