@@ -565,3 +565,49 @@ Supporting changes:
 4. ThemeProvider (next-themes) for proper light/dark toggle.
 5. A "Live activity" ticker (marquee of recent purchases) near the hero for extra social proof.
 6. Product detail route (/product/[id]) — data + Quick View ready to reuse.
+
+---
+Task ID: 11 (cron review round 4 — product comparison + live activity ticker)
+Agent: orchestrator (webDevReview cron)
+Task: QA the live site with agent-browser, then build a product comparison feature and a live activity ticker.
+
+## Current project status (assessment)
+- Site is STABLE: `bun run lint` clean, dev log shows `GET / 200`, no runtime/console errors.
+- All features from rounds 1-3 (promo bar, scroll progress, social proof, recently viewed, back-to-top, cart drawer, wishlist drawer, search, quick view, currency switch, mega-menu, checkout flow, deal of the day, mobile nav) intact and working.
+- No bugs found during QA. Proceeded to feature additions per the mandatory directives.
+
+## Completed modifications (this round)
+Added 2 major features + 1 supporting component (all browser-verified):
+
+1. **Product Comparison feature** — a premium marketplace standard. Three new components:
+   - **CompareDrawer** (`src/components/layout/compare-drawer.tsx`) — a wide right-side drawer showing a side-by-side comparison table. Rows: Price (with struck old price), Discount %, Rating (stars + numeric), Reviews count, Category, Delivery (Instant badge), Tags (pills). Header row shows product gradient swatch + emoji + name + remove button + discount badge. Each product column has its own "Add to cart" + "Remove" buttons. Footer: "Add all to cart" + "Clear all". Empty slots show dashed placeholders ("Add another"). Empty state with a "Browse products" CTA. Max 3 products.
+   - **CompareBar** (`src/components/layout/compare-bar.tsx`) — a floating glass bar that appears at the bottom of the viewport (above mobile nav) when ≥1 product is in the compare list. Shows the azure compare icon + "N/3 selected" label, product thumbnails (with remove-on-hover X), empty slot placeholders, and a "Compare →" button that opens the CompareDrawer. Spring-animated entrance/exit.
+   - **ProductCard compare toggle** — added a second circular icon button (GitCompareArrows) below the wishlist heart on every product card. Azure when active, dark glass when inactive. Toasts "Added to compare" / "Removed from compare".
+
+2. **LiveActivityTicker** (`src/components/sections/live-activity-ticker.tsx`) — a horizontal marquee of "recent purchases" placed right below the hero. Shows 10 scrolling activity items (buyer name + product emoji + product name + country flag + time ago) with a pulsing green "LIVE" badge on the left and fade masks on both edges. Seamlessly loops (doubled list, 40s linear). Premium social proof.
+
+Supporting changes:
+- **Store** (`src/lib/store.ts`): added the compare slice — `compareList: string[]`, `toggleCompare` (enforces max 3, silently ignores beyond), `isComparing`, `clearCompare`, `isCompareOpen`/`openCompare`/`closeCompare`. `compareList` persisted to localStorage.
+- **ProductCard** (`src/components/shared/product-card.tsx`): added `GitCompareArrows` import, `toggleCompare`/`isComparing` from store, and the compare toggle button (stacked vertically under the wishlist heart).
+- **page.tsx**: added `<CompareDrawer />` + `<CompareBar />` to overlays; added `<LiveActivityTicker />` right after `<Hero />`.
+
+## Verification results
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: no page errors, no console warnings.
+- **Live ticker**: section present right after hero, scrolls continuously.
+- **Compare buttons**: 41 compare toggle buttons found across product cards.
+- **Compare flow** (full end-to-end tested): clicked compare on 2 products → CompareBar appeared at bottom with "Compare" button + 2 thumbnails → clicked Compare → CompareDrawer opened showing "Compare (2/3)" with both products, discount badges (-40%, -33%), and all comparison rows populated (Price, Rating, Category, Delivery, Tags) + "Add all to cart" footer.
+- **Mobile**: ticker visible + mobile nav present at 390px viewport.
+- All pre-existing features unaffected.
+
+## Unresolved issues / risks
+- None blocking. The comparison is capped at 3 products (industry standard for side-by-side). The 4th+ click is silently ignored with no toast — could add a "max 3 reached" toast in a future polish pass.
+- The live ticker data is static (10 hardcoded activities). A real implementation would feed from a websocket or API.
+
+## Priority recommendations for next phase
+1. Filter/sort controls on product rails (price, rating, discount sliders).
+2. AI-generated product imagery to replace gradient+emoji covers (image-generation skill).
+3. ThemeProvider (next-themes) for proper light/dark toggle.
+4. Product detail route (/product/[id]) — data + Quick View ready to reuse.
+5. A "max 3 reached" toast when compare is full.
+6. Gamification: a loyalty points / XP bar in the header or account menu.

@@ -10,6 +10,8 @@ import BackToTop from "@/components/layout/back-to-top";
 import SocialProofToast from "@/components/layout/social-proof";
 import WishlistDrawer from "@/components/layout/wishlist-drawer";
 import CheckoutModal from "@/components/layout/checkout-modal";
+import CompareDrawer from "@/components/layout/compare-drawer";
+import CompareBar from "@/components/layout/compare-bar";
 import Hero from "@/components/sections/hero";
 import { TrustBadges, Categories } from "@/components/sections/trust-categories";
 import {
@@ -25,6 +27,7 @@ import { RecentlyViewed } from "@/components/sections/recently-viewed";
 import { DealOfTheDay } from "@/components/sections/deal-of-the-day";
 import { WhyChooseUs, Testimonials, AffiliateCTA } from "@/components/sections/why-testimonials";
 import { BlogPosts, Newsletter } from "@/components/sections/blog-newsletter";
+import LiveActivityTicker from "@/components/sections/live-activity-ticker";
 
 export default function Home() {
   return (
@@ -36,6 +39,8 @@ export default function Home() {
       <main className="flex-1 pb-24 lg:pb-0">
         {/* 1. Hero */}
         <Hero />
+        {/* Live activity ticker (social proof marquee) */}
+        <LiveActivityTicker />
         {/* 2. Trust Badges */}
         <TrustBadges />
         {/* 3. Popular Categories */}
@@ -74,11 +79,13 @@ export default function Home() {
       {/* Global overlays */}
       <CartDrawer />
       <WishlistDrawer />
+      <CompareDrawer />
       <SearchModal />
       <QuickViewModal />
       <CheckoutModal />
       <MobileNav />
       <BackToTop />
+      <CompareBar />
       <SocialProofToast />
     </div>
   );

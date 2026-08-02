@@ -82,6 +82,15 @@ interface StoreState {
   /* Promo bar */
   promoDismissed: boolean;
   dismissPromo: () => void;
+
+  /* Compare */
+  compareList: string[];
+  toggleCompare: (id: string) => void;
+  isComparing: (id: string) => boolean;
+  clearCompare: () => void;
+  isCompareOpen: boolean;
+  openCompare: () => void;
+  closeCompare: () => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -162,6 +171,23 @@ export const useStore = create<StoreState>()(
 
       promoDismissed: false,
       dismissPromo: () => set({ promoDismissed: true }),
+
+      compareList: [],
+      toggleCompare: (id) =>
+        set((s) => {
+          if (s.compareList.includes(id)) {
+            return { compareList: s.compareList.filter((c) => c !== id) };
+          }
+          if (s.compareList.length >= 3) {
+            return s; // max 3 — ignore silently
+          }
+          return { compareList: [...s.compareList, id] };
+        }),
+      isComparing: (id) => get().compareList.includes(id),
+      clearCompare: () => set({ compareList: [] }),
+      isCompareOpen: false,
+      openCompare: () => set({ isCompareOpen: true }),
+      closeCompare: () => set({ isCompareOpen: false }),
     }),
     {
       name: "playbeat-store",
@@ -171,6 +197,7 @@ export const useStore = create<StoreState>()(
         wishlist: s.wishlist,
         recentlyViewed: s.recentlyViewed,
         promoDismissed: s.promoDismissed,
+        compareList: s.compareList,
       }),
     }
   )

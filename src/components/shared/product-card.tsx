@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   Check,
   Plus,
+  GitCompareArrows,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,9 +28,10 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onQuickView, index = 0 }: ProductCardProps) {
-  const { currency, addToCart, openCart, toggleWishlist, isWishlisted, openQuickView } = useStore();
+  const { currency, addToCart, openCart, toggleWishlist, isWishlisted, openQuickView, toggleCompare, isComparing } = useStore();
   const { toast } = useToast();
   const wished = isWishlisted(product.id);
+  const comparing = isComparing(product.id);
   const [added, setAdded] = React.useState(false);
   const discount = product.oldPrice ? discountPct(product.oldPrice, product.price) : 0;
 
@@ -123,25 +125,47 @@ export function ProductCard({ product, onQuickView, index = 0 }: ProductCardProp
         </div>
 
         {/* Wishlist */}
-        <button
-          aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleWishlist(product.id);
-            toast({
-              title: wished ? "Removed from wishlist" : "Saved to wishlist",
-              description: product.name,
-            });
-          }}
-          className={cn(
-            "absolute right-3 top-3 grid size-9 place-items-center rounded-full border backdrop-blur-md transition-all",
-            wished
-              ? "bg-danger/90 border-danger text-white"
-              : "bg-black/40 border-white/15 text-white hover:bg-black/60"
-          )}
-        >
-          <Heart className={cn("size-4", wished && "fill-white")} />
-        </button>
+        <div className="absolute right-3 top-3 flex flex-col gap-1.5">
+          <button
+            aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWishlist(product.id);
+              toast({
+                title: wished ? "Removed from wishlist" : "Saved to wishlist",
+                description: product.name,
+              });
+            }}
+            className={cn(
+              "grid size-9 place-items-center rounded-full border backdrop-blur-md transition-all",
+              wished
+                ? "bg-danger/90 border-danger text-white"
+                : "bg-black/40 border-white/15 text-white hover:bg-black/60"
+            )}
+          >
+            <Heart className={cn("size-4", wished && "fill-white")} />
+          </button>
+          {/* Compare toggle */}
+          <button
+            aria-label={comparing ? "Remove from compare" : "Add to compare"}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleCompare(product.id);
+              toast({
+                title: comparing ? "Removed from compare" : "Added to compare",
+                description: product.name,
+              });
+            }}
+            className={cn(
+              "grid size-9 place-items-center rounded-full border backdrop-blur-md transition-all",
+              comparing
+                ? "bg-azure/90 border-azure text-white"
+                : "bg-black/40 border-white/15 text-white hover:bg-black/60"
+            )}
+          >
+            <GitCompareArrows className={cn("size-4", comparing && "text-white")} />
+          </button>
+        </div>
 
         {/* Quick view */}
         <button
