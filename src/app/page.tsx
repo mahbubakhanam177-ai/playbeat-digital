@@ -9,6 +9,7 @@ import ScrollProgress from "@/components/layout/scroll-progress";
 import BackToTop from "@/components/layout/back-to-top";
 import SocialProofToast from "@/components/layout/social-proof";
 import WishlistDrawer from "@/components/layout/wishlist-drawer";
+import CheckoutModal from "@/components/layout/checkout-modal";
 import Hero from "@/components/sections/hero";
 import { TrustBadges, Categories } from "@/components/sections/trust-categories";
 import {
@@ -21,6 +22,7 @@ import {
   Bundles,
 } from "@/components/sections/product-rails";
 import { RecentlyViewed } from "@/components/sections/recently-viewed";
+import { DealOfTheDay } from "@/components/sections/deal-of-the-day";
 import { WhyChooseUs, Testimonials, AffiliateCTA } from "@/components/sections/why-testimonials";
 import { BlogPosts, Newsletter } from "@/components/sections/blog-newsletter";
 
@@ -44,6 +46,8 @@ export default function Home() {
         <TrendingProducts />
         {/* 6. Flash Deals */}
         <FlashDeals />
+        {/* Deal of the Day spotlight */}
+        <DealOfTheDay />
         {/* 7. Best Sellers */}
         <BestSellers />
         {/* Recently viewed (auto-populated on Quick View; hidden until first view) */}
@@ -72,6 +76,7 @@ export default function Home() {
       <WishlistDrawer />
       <SearchModal />
       <QuickViewModal />
+      <CheckoutModal />
       <MobileNav />
       <BackToTop />
       <SocialProofToast />

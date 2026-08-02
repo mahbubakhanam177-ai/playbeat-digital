@@ -516,3 +516,52 @@ Supporting changes:
 4. AI-generated product imagery to replace gradient+emoji covers (image-generation skill).
 5. A multi-step checkout modal (cart → details → payment → confirmation) — currently "Proceed to Checkout" only toasts.
 6. ThemeProvider (next-themes) for proper light/dark toggle.
+
+---
+Task ID: 10 (cron review round 3 — checkout flow + deal of the day)
+Agent: orchestrator (webDevReview cron)
+Task: QA the live site with agent-browser, then build a multi-step checkout modal and a Deal of the Day spotlight section.
+
+## Current project status (assessment)
+- Site is STABLE: `bun run lint` clean, dev log shows `GET / 200`, no runtime/console errors.
+- All 15 sections + all overlays from rounds 1-2 intact and working.
+- QA confirmed "Proceed to Checkout" only fired a toast (no real checkout flow) — addressed this round.
+
+## Completed modifications (this round)
+Added 2 major conversion-focused features (all browser-verified end-to-end):
+
+1. **Multi-step CheckoutModal** (`src/components/layout/checkout-modal.tsx`) — a premium 3-step secure checkout flow:
+   - **Step 1 (Details)**: email (delivery address), full name, coupon field ("PLAYBEAT10" → 10% off), 3 trust badges (256-bit SSL / Instant delivery / Secure payment). Validation: email must contain @, name > 1 char.
+   - **Step 2 (Payment)**: 4 payment methods as selectable cards (Credit/Debit Card, PayPal [Popular badge], Cryptocurrency [−5% badge], bKash/Easypaisa). Card method reveals card number (auto-formats 4242 4242...), expiry (MM/YY auto-format), CVC fields. Crypto method shows a 5% discount confirmation. Non-card methods show a redirect notice.
+   - **Step 3 (Processing)**: gold spinner with "Processing your payment…" for ~2.2s.
+   - **Step 4 (Success)**: spring-animated party popper icon, "Order confirmed!" headline, order number (#PB-XXXXXX), item count + total, "Instant delivery activated" badge, email confirmation, "Continue shopping" button. Closing the success modal clears the cart.
+   - Stepper UI at top (numbered circles with check marks for completed steps, connecting progress bars). Live order total in footer with itemized discounts (coupon + crypto). Currency-aware throughout. `openCheckout()` closes the cart drawer and opens the checkout modal.
+
+2. **Deal of the Day spotlight** (`src/components/sections/deal-of-the-day.tsx`) — a premium conversion-focused section placed between Flash Deals and Best Sellers:
+   - Auto-selects the highest-discount flash deal product.
+   - Two-column layout: LEFT = large gradient visual with floating animated emoji, rotating discount ribbon (-X% OFF), "Deal of the Day" badge; RIGHT = "Limited time" pill, product name + description, star rating + reviews, **big live countdown timer** (HRS:MIN:SEC with colons, tabular-nums, mounted-guard for SSR safety), 4-feature checklist (instant delivery, authentic, lifetime guarantee, 24/7 support), price + struck old price, Add to cart / Buy now / Quick view buttons.
+   - Ambient gold glow + grid background, gold top hairline, Framer Motion entrance + floating emoji animation.
+
+Supporting changes:
+- **Store** (`src/lib/store.ts`): added `isCheckoutOpen`/`openCheckout`/`closeCheckout` to the checkout slice. `openCheckout()` also closes the cart drawer (`isCartOpen: false`).
+- **CartDrawer**: `handleCheckout` now calls `openCheckout()` instead of just toasting.
+- **page.tsx**: added `<CheckoutModal />` to overlays; added `<DealOfTheDay />` after Flash Deals.
+
+## Verification results
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: no page errors, no console warnings.
+- **Deal of the Day**: section renders with "Deal of the Day" badge, "Ends in" label, live SEC countdown ticking.
+- **Checkout flow** (full end-to-end tested): Buy Now → cart drawer opens → Proceed to Checkout → checkout modal opens (1 item, $14.99, stepper visible) → filled email + name → applied PLAYBEAT10 coupon (10% off) → Continue to payment → selected Cryptocurrency (5% discount, total $13.49) → clicked "Pay $13.49" → processing spinner → **"Order confirmed!"** success with order #PB-XXXXXX + email shown + Continue shopping → clicked Continue → cart cleared to 0 items.
+- All pre-existing features unaffected.
+
+## Unresolved issues / risks
+- None blocking. The checkout is a frontend simulation (no real payment processing) — appropriate for a frontend showcase. Real integration would need a backend payment API (Stripe, PayPal SDK, crypto gateway).
+- The deal countdown targets "23h59m from mount" so it always shows a fresh urgency window. A real implementation would sync to a server-side deal expiry.
+
+## Priority recommendations for next phase
+1. Product comparison feature (compare 2-3 products side-by-side).
+2. Filter/sort controls on product rails (price, rating, discount sliders).
+3. AI-generated product imagery to replace gradient+emoji covers (image-generation skill).
+4. ThemeProvider (next-themes) for proper light/dark toggle.
+5. A "Live activity" ticker (marquee of recent purchases) near the hero for extra social proof.
+6. Product detail route (/product/[id]) — data + Quick View ready to reuse.

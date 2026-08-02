@@ -45,6 +45,11 @@ interface StoreState {
   updateQty: (id: string, qty: number) => void;
   clearCart: () => void;
 
+  /* Checkout */
+  isCheckoutOpen: boolean;
+  openCheckout: () => void;
+  closeCheckout: () => void;
+
   /* Wishlist */
   wishlist: string[];
   toggleWishlist: (id: string) => void;
@@ -110,6 +115,10 @@ export const useStore = create<StoreState>()(
             .filter((c) => c.quantity > 0),
         })),
       clearCart: () => set({ cart: [] }),
+
+      isCheckoutOpen: false,
+      openCheckout: () => set({ isCartOpen: false, isCheckoutOpen: true }),
+      closeCheckout: () => set({ isCheckoutOpen: false }),
 
       wishlist: [],
       toggleWishlist: (id) =>

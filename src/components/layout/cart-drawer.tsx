@@ -43,6 +43,7 @@ export default function CartDrawer() {
     updateQty,
     clearCart,
     currency,
+    openCheckout,
   } = useStore();
   const { toast } = useToast();
 
@@ -83,10 +84,7 @@ export default function CartDrawer() {
   };
 
   const handleCheckout = () => {
-    toast({
-      title: "Redirecting to secure checkout…",
-      description: "Encrypting your order with 256-bit SSL.",
-    });
+    openCheckout();
   };
 
   const handleClear = () => {
