@@ -102,6 +102,11 @@ interface StoreState {
   isRewardsOpen: boolean;
   openRewards: () => void;
   closeRewards: () => void;
+  pointsHistory: { id: string; amount: number; reason: string; ts: number }[];
+  clearHistory: () => void;
+  isHistoryOpen: boolean;
+  openHistory: () => void;
+  closeHistory: () => void;
 
   /* Cookie consent */
   cookieConsent: "accepted" | "essential" | null;
@@ -211,21 +216,38 @@ export const useStore = create<StoreState>()(
       closeCompare: () => set({ isCompareOpen: false }),
 
       loyaltyPoints: 0,
-      addPoints: (n, _reason) =>
-        set((s) => ({ loyaltyPoints: s.loyaltyPoints + n })),
+      addPoints: (n, reason = "activity") =>
+        set((s) => ({
+          loyaltyPoints: s.loyaltyPoints + n,
+          pointsHistory: [
+            { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, amount: n, reason, ts: Date.now() },
+            ...s.pointsHistory,
+          ].slice(0, 50),
+        })),
       spendPoints: (n) => {
         const current = get().loyaltyPoints;
         if (current < n) return false;
-        set((s) => ({ loyaltyPoints: s.loyaltyPoints - n }));
+        set((s) => ({
+          loyaltyPoints: s.loyaltyPoints - n,
+          pointsHistory: [
+            { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, amount: -n, reason: "redeemed reward", ts: Date.now() },
+            ...s.pointsHistory,
+          ].slice(0, 50),
+        }));
         return true;
       },
-      resetPoints: () => set({ loyaltyPoints: 0 }),
+      resetPoints: () => set({ loyaltyPoints: 0, pointsHistory: [] }),
       redeemedRewards: [],
       addRedeemedReward: (code) =>
         set((s) => ({ redeemedRewards: [code, ...s.redeemedRewards].slice(0, 20) })),
       isRewardsOpen: false,
       openRewards: () => set({ isRewardsOpen: true }),
       closeRewards: () => set({ isRewardsOpen: false }),
+      pointsHistory: [],
+      clearHistory: () => set({ pointsHistory: [] }),
+      isHistoryOpen: false,
+      openHistory: () => set({ isHistoryOpen: true }),
+      closeHistory: () => set({ isHistoryOpen: false }),
 
       cookieConsent: null,
       setCookieConsent: (v) => set({ cookieConsent: v }),
@@ -241,6 +263,7 @@ export const useStore = create<StoreState>()(
         compareList: s.compareList,
         loyaltyPoints: s.loyaltyPoints,
         redeemedRewards: s.redeemedRewards,
+        pointsHistory: s.pointsHistory,
         cookieConsent: s.cookieConsent,
       }),
     }

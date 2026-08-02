@@ -28,6 +28,7 @@ import {
   Star,
   ArrowRight,
   User,
+  History,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -74,6 +75,7 @@ const ACCOUNT_MENU: { label: string; icon: React.ElementType }[] = [
   { label: "My Orders", icon: Package },
   { label: "Dashboard", icon: LayoutDashboard },
   { label: "Rewards & Points", icon: Gift },
+  { label: "Points History", icon: History },
   { label: "Affiliate Earnings", icon: DollarSign },
   { label: "Settings", icon: Settings },
 ];
@@ -227,6 +229,7 @@ function CurrencySwitcher({ compact = false }: { compact?: boolean }) {
 /* --------------------------- Account Menu --------------------------- */
 function AccountMenu() {
   const openRewards = useStore((s) => s.openRewards);
+  const openHistory = useStore((s) => s.openHistory);
   const loyaltyPoints = useStore((s) => s.loyaltyPoints);
   return (
     <DropdownMenu>
@@ -259,16 +262,17 @@ function AccountMenu() {
         <DropdownMenuSeparator className="bg-white/[0.06]" />
         {ACCOUNT_MENU.map((item, idx) => (
           <React.Fragment key={item.label}>
-            {(idx === 1 || idx === 4) && (
+            {(idx === 1 || idx === 5) && (
               <DropdownMenuSeparator className="bg-white/[0.06]" />
             )}
             <DropdownMenuItem
               onSelect={() => {
                 if (item.label === "Rewards & Points") openRewards();
+                if (item.label === "Points History") openHistory();
               }}
               className="cursor-pointer rounded-md px-2.5 py-2 text-sm text-white/80 outline-none focus:bg-white/[0.06] focus:text-white data-[highlighted]:bg-white/[0.06] data-[highlighted]:text-white"
             >
-              <item.icon className={cn("size-4", item.label === "Rewards & Points" ? "text-gold" : "text-muted-foreground")} />
+              <item.icon className={cn("size-4", (item.label === "Rewards & Points" || item.label === "Points History") ? "text-gold" : "text-muted-foreground")} />
               <span>{item.label}</span>
               {item.label === "Rewards & Points" && (
                 <span className="ml-auto text-[10px] font-bold text-gold">{loyaltyPoints.toLocaleString()} pts</span>

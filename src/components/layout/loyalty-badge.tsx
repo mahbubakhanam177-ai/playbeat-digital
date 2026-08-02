@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ChevronRight, Gift, Trophy } from "lucide-react";
+import { Sparkles, ChevronRight, Gift, Trophy, History } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { CURRENCIES } from "@/lib/store";
 import {
@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 export default function LoyaltyBadge() {
   const points = useStore((s) => s.loyaltyPoints);
   const openRewards = useStore((s) => s.openRewards);
+  const openHistory = useStore((s) => s.openHistory);
   const [open, setOpen] = React.useState(false);
   const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -175,17 +176,28 @@ export default function LoyaltyBadge() {
               </div>
             </div>
 
-            {/* Footer: redeem + hint */}
+            {/* Footer: redeem + history + hint */}
             <div className="border-t border-white/[0.06] bg-white/[0.02] p-3">
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  openRewards();
-                }}
-                className="mb-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-gold py-2 text-xs font-semibold text-black transition-all hover:bg-gold/90"
-              >
-                <Gift className="size-3.5" /> Redeem rewards
-              </button>
+              <div className="mb-2 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    openRewards();
+                  }}
+                  className="flex items-center justify-center gap-1.5 rounded-lg bg-gold py-2 text-xs font-semibold text-black transition-all hover:bg-gold/90"
+                >
+                  <Gift className="size-3.5" /> Redeem
+                </button>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    openHistory();
+                  }}
+                  className="flex items-center justify-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] py-2 text-xs font-semibold text-white transition-all hover:bg-white/[0.06]"
+                >
+                  <History className="size-3.5" /> History
+                </button>
+              </div>
               <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <ChevronRight className="size-3 text-gold" />
                 Earn points: cart (+5), wishlist (+3), checkout (+50)

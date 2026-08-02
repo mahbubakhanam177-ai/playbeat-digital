@@ -18,6 +18,7 @@ import {
   Mail,
   Loader2,
   Tag,
+  Gift,
 } from "lucide-react";
 import {
   Dialog,
@@ -63,6 +64,7 @@ export default function CheckoutModal() {
     currency,
     clearCart,
     addPoints,
+    redeemedRewards,
   } = useStore();
   const { toast } = useToast();
 
@@ -96,6 +98,12 @@ export default function CheckoutModal() {
     if (!coupon.trim()) return;
     setCouponApplied(true);
     toast({ title: "Coupon applied", description: "10% discount added to your order." });
+  };
+
+  const applyRedeemedCode = (code: string) => {
+    setCoupon(code);
+    setCouponApplied(true);
+    toast({ title: "Reward code applied", description: `${code} — 10% discount added.` });
   };
 
   const handlePay = () => {
@@ -260,6 +268,31 @@ export default function CheckoutModal() {
                       {couponApplied ? <Check className="size-4" /> : "Apply"}
                     </Button>
                   </div>
+                  {/* Redeemed reward codes */}
+                  {redeemedRewards.length > 0 && !couponApplied && (
+                    <div className="space-y-1.5 pt-1">
+                      <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
+                        <Gift className="size-3 text-gold" /> Your redeemed codes (tap to apply):
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {redeemedRewards.slice(0, 5).map((code) => (
+                          <button
+                            key={code}
+                            onClick={() => applyRedeemedCode(code)}
+                            className="rounded-full border border-gold/25 bg-gold/[0.06] px-2.5 py-1 font-mono text-[10px] font-semibold text-gold transition-all hover:bg-gold hover:text-black"
+                          >
+                            {code}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {couponApplied && (
+                    <div className="flex items-center gap-1.5 rounded-lg bg-success/10 px-2.5 py-1.5 text-xs text-success">
+                      <Check className="size-3.5" />
+                      Coupon applied — 10% discount active
+                    </div>
+                  )}
                 </div>
 
                 {/* Trust badges */}
