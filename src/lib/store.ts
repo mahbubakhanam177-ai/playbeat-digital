@@ -64,6 +64,15 @@ interface StoreState {
   isMobileNavOpen: boolean;
   openMobileNav: () => void;
   closeMobileNav: () => void;
+
+  /* Recently viewed (auto-tracked on quick view) */
+  recentlyViewed: Product[];
+  addRecentlyViewed: (p: Product) => void;
+  clearRecentlyViewed: () => void;
+
+  /* Promo bar */
+  promoDismissed: boolean;
+  dismissPromo: () => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -112,12 +121,30 @@ export const useStore = create<StoreState>()(
       closeSearch: () => set({ isSearchOpen: false }),
 
       quickViewProduct: null,
-      openQuickView: (p) => set({ quickViewProduct: p }),
+      openQuickView: (p) =>
+        set((s) => {
+          const filtered = s.recentlyViewed.filter((x) => x.id !== p.id);
+          return {
+            quickViewProduct: p,
+            recentlyViewed: [p, ...filtered].slice(0, 8),
+          };
+        }),
       closeQuickView: () => set({ quickViewProduct: null }),
 
       isMobileNavOpen: false,
       openMobileNav: () => set({ isMobileNavOpen: true }),
       closeMobileNav: () => set({ isMobileNavOpen: false }),
+
+      recentlyViewed: [],
+      addRecentlyViewed: (p) =>
+        set((s) => {
+          const filtered = s.recentlyViewed.filter((x) => x.id !== p.id);
+          return { recentlyViewed: [p, ...filtered].slice(0, 8) };
+        }),
+      clearRecentlyViewed: () => set({ recentlyViewed: [] }),
+
+      promoDismissed: false,
+      dismissPromo: () => set({ promoDismissed: true }),
     }),
     {
       name: "playbeat-store",
@@ -125,6 +152,8 @@ export const useStore = create<StoreState>()(
         currency: s.currency,
         cart: s.cart,
         wishlist: s.wishlist,
+        recentlyViewed: s.recentlyViewed,
+        promoDismissed: s.promoDismissed,
       }),
     }
   )

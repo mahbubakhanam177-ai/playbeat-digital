@@ -4,6 +4,10 @@ import CartDrawer from "@/components/layout/cart-drawer";
 import SearchModal from "@/components/layout/search-modal";
 import MobileNav from "@/components/layout/mobile-nav";
 import QuickViewModal from "@/components/layout/quick-view-modal";
+import PromoBar from "@/components/layout/promo-bar";
+import ScrollProgress from "@/components/layout/scroll-progress";
+import BackToTop from "@/components/layout/back-to-top";
+import SocialProofToast from "@/components/layout/social-proof";
 import Hero from "@/components/sections/hero";
 import { TrustBadges, Categories } from "@/components/sections/trust-categories";
 import {
@@ -15,12 +19,16 @@ import {
   FreeTools,
   Bundles,
 } from "@/components/sections/product-rails";
+import { RecentlyViewed } from "@/components/sections/recently-viewed";
 import { WhyChooseUs, Testimonials, AffiliateCTA } from "@/components/sections/why-testimonials";
 import { BlogPosts, Newsletter } from "@/components/sections/blog-newsletter";
 
 export default function Home() {
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
+      {/* Top-of-page chrome (above header) */}
+      <ScrollProgress />
+      <PromoBar />
       <SiteHeader />
       <main className="flex-1 pb-24 lg:pb-0">
         {/* 1. Hero */}
@@ -37,6 +45,8 @@ export default function Home() {
         <FlashDeals />
         {/* 7. Best Sellers */}
         <BestSellers />
+        {/* Recently viewed (auto-populated on Quick View; hidden until first view) */}
+        <RecentlyViewed />
         {/* 8. AI Tools */}
         <AiTools />
         {/* 9. Free Tools */}
@@ -61,6 +71,8 @@ export default function Home() {
       <SearchModal />
       <QuickViewModal />
       <MobileNav />
+      <BackToTop />
+      <SocialProofToast />
     </div>
   );
 }

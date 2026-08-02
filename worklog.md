@@ -411,3 +411,52 @@ Unresolved / next-phase recommendations:
 - Product detail pages, customer dashboard, affiliate dashboard, checkout flow, and blog detail pages are out of scope for the single `/` route but the component architecture + data catalog are ready for them.
 - Could add real product imagery (image-generation skill) to replace gradient+emoji covers for even more realism.
 - Could wire a real Prisma-backed product API and auth (NextAuth) for production.
+
+---
+Task ID: 8 (cron review round 1 — enhancements)
+Agent: orchestrator (webDevReview cron)
+Task: QA the live site with agent-browser, then add premium styling details + new conversion-focused features.
+
+## Current project status (assessment)
+- Site is STABLE: `bun run lint` clean, dev log shows `GET / 200`, no runtime/console errors, all 15 original sections render, all golden-path interactions (cart, search, currency switch, quick view, wishlist, mobile nav) work.
+- No bugs found during QA. Proceeded to feature/styling enhancements per the mandatory directives.
+
+## Completed modifications (this round)
+Added 5 premium features + styling details (all browser-verified):
+
+1. **PromoBar** (`src/components/layout/promo-bar.tsx`) — dismissible announcement bar fixed at top (z-[60], h-9) with a live end-of-day countdown (HH:MM:SS), "FLASH SALE — 60% off AI Tools & Bundles" copy, and a "Shop Deals →" button. Coordinated with the header: when promo is visible the header shifts to `top-9`; on dismiss it slides back to `top-0` (state shared via `promoDismissed` in the Zustand store, persisted). Verified: promo visible → header `top:36px`; after dismiss → header `top:0px`.
+
+2. **ScrollProgress** (`src/components/layout/scroll-progress.tsx`) — thin 3px gold→azure gradient bar pinned to the very top (z-[70], above promo+header) using Framer Motion `useScroll`+`useSpring` for a smooth scaleX. Verified: transform scales 0→1 with scroll position.
+
+3. **SocialProofToast** (`src/components/layout/social-proof.tsx`) — periodic conversion social-proof notifications via sonner: "🇮🇳 Priya from India purchased Steam Wallet $50 — $47.50 · just now". First toast after 9s, then every 16–26s, capped at 4/session. Pauses when any overlay (cart/search/quick view) is open. Clicking a toast opens that product's Quick View. Verified: fired correctly on fresh load at bottom-left.
+
+4. **RecentlyViewed rail** (`src/components/sections/recently-viewed.tsx`) — new homepage section (brief requirement) that auto-populates whenever a user opens Quick View (tracked in the store's `recentlyViewed` array, persisted, max 8, deduped). Renders only when non-empty. Placed after Best Sellers. Includes Clear button + scroll arrows. Verified: absent before any quick view; appears with 2 cards after opening 2 quick views.
+
+5. **BackToTop** (`src/components/layout/back-to-top.tsx`) — floating gold button (bottom-right, above mobile nav on small screens) that appears after scrolling 600px, smooth-scrolls to top on click.
+
+Supporting changes:
+- **Store** (`src/lib/store.ts`): added `recentlyViewed: Product[]` + `addRecentlyViewed`/`clearRecentlyViewed`, `promoDismissed`/`dismissPromo`. `openQuickView(p)` now also pushes to `recentlyViewed` (single source of truth — works from card, search, social-proof toast). All new state persisted to localStorage.
+- **SiteHeader**: reads `promoDismissed` and conditionally applies `top-9` vs `top-0` (one-line className change).
+- **page.tsx**: wired `<ScrollProgress/>`, `<PromoBar/>` above header; `<RecentlyViewed/>` after Best Sellers; `<BackToTop/>` + `<SocialProofToast/>` in the overlays group.
+
+## Verification results
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: no page errors, no console warnings.
+- Promo bar: visible with live countdown, dismissible, header offset transitions correctly.
+- Scroll progress: scales with scroll.
+- Back-to-top: appears after 600px scroll.
+- Recently viewed: absent initially → appears with N cards after N quick views.
+- Social proof toast: fires ~9s after load, correct buyer/product/price, opens quick view on click.
+- Mobile nav still present; all pre-existing interactions unaffected.
+
+## Unresolved issues / risks
+- None blocking. The Sonner `<Toaster>` wrapper uses `next-themes`'s `useTheme()` without a ThemeProvider, but it falls back gracefully to `theme="system"` and renders fine (verified 2 toaster instances in DOM). Could add a proper `<ThemeProvider>` for cleanliness in a future round.
+- `promoDismissed` is persisted, so once a user dismisses the promo it stays dismissed across sessions. Intentional for UX, but for a real campaign you'd want it to reset daily — a future enhancement.
+
+## Priority recommendations for next phase
+1. Add a real `<ThemeProvider>` (next-themes) and optionally a subtle light-mode preview toggle.
+2. Product detail route (`/product/[id]`) — the data + Quick View modal are ready to reuse.
+3. Checkout flow (multi-step) — cart drawer's "Proceed to Checkout" currently only toasts.
+4. Replace gradient+emoji product covers with AI-generated imagery (image-generation skill) for hyper-realism.
+5. Add a wishlist slide-out drawer (wishlist icon currently only toggles badges).
+6. Filter/sort controls on product rails (price, rating, discount).

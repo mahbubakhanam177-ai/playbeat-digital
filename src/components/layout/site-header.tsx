@@ -304,6 +304,7 @@ export default function SiteHeader() {
   const wishlist = useStore((s) => s.wishlist);
   const openCart = useStore((s) => s.openCart);
   const openSearch = useStore((s) => s.openSearch);
+  const promoDismissed = useStore((s) => s.promoDismissed);
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlist.length;
@@ -350,7 +351,8 @@ export default function SiteHeader() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-300",
+        "fixed inset-x-0 z-50 transition-all duration-300",
+        promoDismissed ? "top-0" : "top-9",
         scrolled
           ? "glass-strong border-b border-white/[0.06]"
           : "border-b border-transparent bg-transparent"
