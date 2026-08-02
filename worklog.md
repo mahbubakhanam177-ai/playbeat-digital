@@ -884,3 +884,56 @@ Supporting changes:
 4. Apply FilterSortBar to a dedicated "All Products" / "Browse" section.
 5. A notification for tier upgrades (when points cross Silver/Gold/Platinum thresholds).
 6. Mark notifications as read when the dropdown opens (auto-read on view).
+
+---
+Task ID: 17 (cron review round 10 — tier-upgrade notifications + auto-read + all products grid)
+Agent: orchestrator (webDevReview cron)
+Task: QA the live site with agent-browser, then add tier-upgrade notifications, auto-read-on-open, and a dedicated All Products browse section.
+
+## Current project status (assessment)
+- Site is STABLE: `bun run lint` clean, dev log shows `GET / 200`, no runtime/console errors.
+- All 22 sections + all overlays from rounds 1-9 intact and working (now 23 sections with the new All Products grid).
+- No bugs found during QA. Proceeded to feature additions per the mandatory directives.
+
+## Completed modifications (this round)
+Added 3 features (all browser-verified):
+
+1. **Tier-upgrade notifications** — when points cross Silver (500) / Gold (1500) / Platinum (4000) thresholds, a celebratory notification auto-fires:
+   - **Store** (`src/lib/store.ts`): imported `getTier` + `LOYALTY_TIERS` from loyalty helper. Rewrote `addPoints` to compute `tierBefore` and `tierAfter` around the points change. If the tier name changed AND the new tier's `min > 0` (skips initial 0→Bronze), it calls `get().addNotification(...)` with type "points", title "Tier upgraded to {Tier}! {emoji}", and message "You've unlocked {perk}. Enjoy your new {Tier} perks."
+   - Verified: set points to 498 (Bronze), wishlisted 1 item (+3 → 501, Silver) → notification fired "Tier upgraded to Silver!".
+
+2. **Auto-read notifications on dropdown open** — marks all notifications as read 1.5s after the dropdown opens:
+   - **NotificationsDropdown**: added `autoReadTimer` ref + `handleOpenChange(open)` callback passed to `<DropdownMenu onOpenChange>`. When opened with unread > 0, starts a 1.5s timer that calls `markAllNotificationsRead()`. If the dropdown closes before the timer fires, the timer is cleared. Cleanup on unmount.
+   - The 1.5s delay lets the user briefly see the unread state (gold dots + tint) before it clears.
+   - Verified: opened dropdown with 30 unread → after ~2s, unread count dropped to 0.
+
+3. **All Products browse section** (`src/components/sections/all-products.tsx`) — a dedicated grid (not rail) for browsing the full catalog with filter/sort:
+   - `id="all-products"`, SectionHeading "All Products" with live count ("N of M products").
+   - Full `<FilterSortBar>` (sort: featured/price/rating/discount; price range slider; 7 category chips).
+   - Responsive grid: 2 cols mobile, 3 sm, 4 lg. Animated card entrance (Framer Motion layout + fade+up).
+   - **Load more pagination**: shows 12 cards initially, "Load more products +N" button reveals 8 more at a time. Resets when filters change. Shows "Showing X of Y" count.
+   - Empty state when filters return 0 results.
+   - Placed after Bundles, before Why Choose Us.
+
+Supporting changes:
+- **page.tsx**: imported and rendered `<AllProducts />` after `<Bundles />`.
+
+## Verification results
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: no page errors, no console warnings.
+- **All Products grid**: section present with heading + filter bar. Responsive grid (2/3/4 cols). 12 cards initially → "Load more" expanded to 20. "Showing X of Y" count displayed.
+- **Tier-upgrade notification**: set points to 498 (Bronze) → wishlisted 1 item (+3 → 501) → tier changed to Silver → notification fired "Tier upgraded to Silver!" with "unlocked" perk text. Verified in the notifications dropdown.
+- **Auto-read**: opened dropdown with 30 unread → waited 2s → unread count dropped to 0.
+- All pre-existing features unaffected.
+
+## Unresolved issues / risks
+- None blocking. The tier-upgrade notification fires on any upward tier change (including spendPoints that doesn't change tier — no false positive since it only fires when the tier name actually changes upward).
+- The All Products section duplicates some products already shown in the curated rails above (Featured, Trending, etc.) — intentional, as it's the full browseable catalog.
+
+## Priority recommendations for next phase
+1. AI-generated product imagery to replace gradient+emoji covers (image-generation skill).
+2. ThemeProvider (next-themes) for proper light/dark toggle.
+3. Product detail route (/product/[id]) — data + Quick View ready to reuse.
+4. A "Recently searched" persistence in the search modal (already has trending/recent, could persist actual searches).
+5. Keyboard shortcut hints overlay (show all shortcuts on `?` press).
+6. A mini stats dashboard in the account menu (total spent, orders count, member since).

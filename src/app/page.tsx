@@ -28,6 +28,7 @@ import {
 } from "@/components/sections/product-rails";
 import { RecentlyViewed } from "@/components/sections/recently-viewed";
 import { DealOfTheDay } from "@/components/sections/deal-of-the-day";
+import { AllProducts } from "@/components/sections/all-products";
 import { WhyChooseUs, Testimonials, AffiliateCTA } from "@/components/sections/why-testimonials";
 import { BlogPosts, Newsletter } from "@/components/sections/blog-newsletter";
 import LiveActivityTicker from "@/components/sections/live-activity-ticker";
@@ -66,6 +67,8 @@ export default function Home() {
         <FreeTools />
         {/* 10. Bundles */}
         <Bundles />
+        {/* All Products browse grid (full catalog with filter/sort) */}
+        <AllProducts />
         {/* 11. Why Choose Us */}
         <WhyChooseUs />
         {/* 12. Testimonials */}

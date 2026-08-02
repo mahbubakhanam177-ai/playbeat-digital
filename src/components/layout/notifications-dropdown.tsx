@@ -58,6 +58,23 @@ export default function NotificationsDropdown() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  // Auto-mark all as read 1.5s after the dropdown opens (lets the user see
+  // the unread state briefly before it clears).
+  const autoReadTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleOpenChange = (open: boolean) => {
+    if (open && unreadCount > 0) {
+      autoReadTimer.current = setTimeout(() => {
+        markAllNotificationsRead();
+      }, 1500);
+    } else if (autoReadTimer.current) {
+      clearTimeout(autoReadTimer.current);
+      autoReadTimer.current = null;
+    }
+  };
+  React.useEffect(() => () => {
+    if (autoReadTimer.current) clearTimeout(autoReadTimer.current);
+  }, []);
+
   const handleNotifClick = (n: AppNotification) => {
     markNotificationRead(n.id);
     if (n.type === "order") openCart();
@@ -65,7 +82,7 @@ export default function NotificationsDropdown() {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"

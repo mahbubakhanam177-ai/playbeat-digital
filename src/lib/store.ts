@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Product } from "@/lib/data";
+import { getTier, LOYALTY_TIERS } from "@/lib/loyalty";
 
 /* ----------------------------- Types ----------------------------- */
 export type CurrencyCode = "USD" | "PKR" | "BDT";
@@ -236,14 +237,28 @@ export const useStore = create<StoreState>()(
       closeCompare: () => set({ isCompareOpen: false }),
 
       loyaltyPoints: 0,
-      addPoints: (n, reason = "activity") =>
+      addPoints: (n, reason = "activity") => {
+        const before = get().loyaltyPoints;
+        const after = before + n;
+        const tierBefore = getTier(before);
+        const tierAfter = getTier(after);
         set((s) => ({
           loyaltyPoints: s.loyaltyPoints + n,
           pointsHistory: [
             { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, amount: n, reason, ts: Date.now() },
             ...s.pointsHistory,
           ].slice(0, 50),
-        })),
+        }));
+        // Tier upgrade — fire a celebratory notification (skip on initial 0→Bronze).
+        if (tierAfter.min > 0 && tierAfter.name !== tierBefore.name) {
+          get().addNotification({
+            type: "points",
+            title: `Tier upgraded to ${tierAfter.name}! ${tierAfter.emoji}`,
+            message: `You've unlocked ${tierAfter.perk}. Enjoy your new ${tierAfter.name} perks.`,
+            emoji: tierAfter.emoji,
+          });
+        }
+      },
       spendPoints: (n) => {
         const current = get().loyaltyPoints;
         if (current < n) return false;
