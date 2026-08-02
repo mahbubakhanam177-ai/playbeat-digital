@@ -937,3 +937,33 @@ Supporting changes:
 4. A "Recently searched" persistence in the search modal (already has trending/recent, could persist actual searches).
 5. Keyboard shortcut hints overlay (show all shortcuts on `?` press).
 6. A mini stats dashboard in the account menu (total spent, orders count, member since).
+
+---
+Task ID: 18 (user request — integrate uploaded Playbeat logo)
+Agent: orchestrator (main)
+Task: Replace the placeholder Music2 icon / "P" letter logo with the user-uploaded Playbeat Digital logo image.
+
+## Current project status (assessment)
+- Site was STABLE before this change. User uploaded `playbeat digital fb.jpeg` (1254×1254 JPEG) and requested it be used as the site logo.
+
+## Completed modifications
+1. Copied the uploaded logo to `public/playbeat-logo.jpeg` (served by Next.js static handler).
+2. **SiteHeader** (`src/components/layout/site-header.tsx`):
+   - Imported `Image` from `next/image`.
+   - Rewrote the desktop `Logo` component: replaced the `bg-gold` tile + `Music2` icon with a rounded `Image` of `/playbeat-logo.jpeg` (36×36, `object-cover`, ring + shadow + hover scale). Kept the "Playbeat.digital" wordmark text alongside.
+   - Rewrote the mobile sheet header logo: same `Image` treatment (32×32) replacing the `Music2` icon.
+   - Removed the now-unused `Music2` import (still used in footer for TikTok, kept there).
+3. **SiteFooter** (`src/components/layout/site-footer.tsx`):
+   - Imported `Image` from `next/image`.
+   - Replaced the gradient "P" letter tile in the footer brand block with the same `Image` (44×44, `object-cover`, ring + shadow). Kept the "Playbeat Digital" wordmark + "Premium Marketplace" subtitle.
+4. **Layout** (`src/app/layout.tsx`): updated `metadata.icons` to use `/playbeat-logo.jpeg` for `icon`, `shortcut`, and `apple` (was `/favicon.ico` which didn't exist).
+
+## Verification results
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: logo image found in header (`src: /_next/image?url=%2Fplaybeat-logo.jpeg`, `naturalW: 48`, `loaded: true`); 1 footer logo image also present.
+- VLM (vision) verification of the header screenshot: "Yes, there is a logo in the top-left corner… rendering correctly. The circular brand icon intact on the left, the text 'Playbeat.digital' fully visible… No visible glitches, pixelation, or loading errors."
+- VLM verification of the footer screenshot: "Yes, there is a logo image in the footer's brand area, and it is rendering correctly."
+- No runtime/console errors.
+
+## Unresolved issues / risks
+- None. The logo is a square JPEG which works well in the rounded-square containers. The favicon now points to the JPEG (modern browsers accept JPEG favicons; for legacy IE a .ico would be needed, but that's not a concern for this project).

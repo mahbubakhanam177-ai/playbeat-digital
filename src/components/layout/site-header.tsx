@@ -10,6 +10,7 @@
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
@@ -20,7 +21,6 @@ import {
   LayoutDashboard,
   LogIn,
   Menu,
-  Music2,
   Package,
   Search,
   Settings,
@@ -90,9 +90,15 @@ function Logo({ onClick }: { onClick?: () => void }) {
       aria-label="Playbeat Digital — scroll to top"
       className="group flex shrink-0 items-center gap-2.5 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
     >
-      <span className="relative flex size-9 items-center justify-center rounded-xl bg-gold text-black shadow-[0_4px_20px_-6px_rgba(255,213,79,0.6)] transition-transform duration-300 group-hover:scale-105">
-        <Music2 className="size-5" strokeWidth={2.5} />
-        <span className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-white/25" />
+      <span className="relative flex size-9 items-center justify-center overflow-hidden rounded-xl shadow-[0_4px_20px_-6px_rgba(255,213,79,0.45)] ring-1 ring-inset ring-white/15 transition-transform duration-300 group-hover:scale-105">
+        <Image
+          src="/playbeat-logo.jpeg"
+          alt="Playbeat Digital logo"
+          width={36}
+          height={36}
+          className="h-full w-full object-cover"
+          priority
+        />
       </span>
       <span className="hidden text-[17px] font-extrabold tracking-tight sm:block">
         <span className="text-gradient-gold">Playbeat</span>
@@ -658,8 +664,14 @@ export default function SiteHeader() {
             {/* Mobile sheet header */}
             <SheetHeader className="flex flex-row items-center justify-between border-b border-white/[0.06] px-5 py-4">
               <SheetTitle className="flex items-center gap-2.5 text-base font-extrabold">
-                <span className="flex size-8 items-center justify-center rounded-lg bg-gold text-black">
-                  <Music2 className="size-4" strokeWidth={2.5} />
+                <span className="relative flex size-8 items-center justify-center overflow-hidden rounded-lg ring-1 ring-inset ring-white/15">
+                  <Image
+                    src="/playbeat-logo.jpeg"
+                    alt="Playbeat Digital logo"
+                    width={32}
+                    height={32}
+                    className="h-full w-full object-cover"
+                  />
                 </span>
                 <span>
                   <span className="text-gradient-gold">Playbeat</span>

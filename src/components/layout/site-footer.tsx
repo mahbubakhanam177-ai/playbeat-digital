@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import {
   Facebook,
@@ -132,8 +133,14 @@ export default function SiteFooter() {
           className="mb-12 lg:mb-16"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#FFE9A8] via-gold to-[#8A6300] shadow-premium">
-              <span className="text-xl font-extrabold text-black">P</span>
+            <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl shadow-premium ring-1 ring-inset ring-white/15">
+              <Image
+                src="/playbeat-logo.jpeg"
+                alt="Playbeat Digital logo"
+                width={44}
+                height={44}
+                className="h-full w-full object-cover"
+              />
             </div>
             <div className="flex flex-col leading-none">
               <span className="text-lg font-bold tracking-tight text-foreground">

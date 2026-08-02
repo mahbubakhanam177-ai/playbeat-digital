@@ -33,7 +33,9 @@ export const metadata: Metadata = {
   authors: [{ name: "Playbeat Digital" }],
   creator: "Playbeat Digital",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/playbeat-logo.jpeg",
+    shortcut: "/playbeat-logo.jpeg",
+    apple: "/playbeat-logo.jpeg",
   },
   openGraph: {
     title: "Playbeat Digital — Premium Digital Marketplace",
