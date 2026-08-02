@@ -150,11 +150,19 @@ export function ProductCard({ product, onQuickView, index = 0 }: ProductCardProp
             aria-label={comparing ? "Remove from compare" : "Add to compare"}
             onClick={(e) => {
               e.stopPropagation();
-              toggleCompare(product.id);
-              toast({
-                title: comparing ? "Removed from compare" : "Added to compare",
-                description: product.name,
-              });
+              const result = toggleCompare(product.id);
+              if (result === "full") {
+                toast({
+                  title: "Compare is full",
+                  description: "Remove a product to add a new one (max 3).",
+                  variant: "destructive",
+                });
+              } else {
+                toast({
+                  title: result === "added" ? "Added to compare" : "Removed from compare",
+                  description: product.name,
+                });
+              }
             }}
             className={cn(
               "grid size-9 place-items-center rounded-full border backdrop-blur-md transition-all",

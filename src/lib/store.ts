@@ -85,7 +85,7 @@ interface StoreState {
 
   /* Compare */
   compareList: string[];
-  toggleCompare: (id: string) => void;
+  toggleCompare: (id: string) => "added" | "removed" | "full";
   isComparing: (id: string) => boolean;
   clearCompare: () => void;
   isCompareOpen: boolean;
@@ -173,16 +173,22 @@ export const useStore = create<StoreState>()(
       dismissPromo: () => set({ promoDismissed: true }),
 
       compareList: [],
-      toggleCompare: (id) =>
+      toggleCompare: (id) => {
+        let result: "added" | "removed" | "full" = "added";
         set((s) => {
           if (s.compareList.includes(id)) {
+            result = "removed";
             return { compareList: s.compareList.filter((c) => c !== id) };
           }
           if (s.compareList.length >= 3) {
-            return s; // max 3 — ignore silently
+            result = "full";
+            return s; // max 3 — ignore silently, caller handles toast
           }
+          result = "added";
           return { compareList: [...s.compareList, id] };
-        }),
+        });
+        return result;
+      },
       isComparing: (id) => get().compareList.includes(id),
       clearCompare: () => set({ compareList: [] }),
       isCompareOpen: false,

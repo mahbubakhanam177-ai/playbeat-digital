@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { PRODUCTS, type Product } from "@/lib/data";
 import { ProductCard } from "@/components/shared/product-card";
 import { SectionHeading } from "@/components/shared/section-heading";
+import { FilterSortBar } from "@/components/shared/filter-sort-bar";
 
 /* ------------------------------------------------------------------
  * Product rails — horizontally-scrollable rows of <ProductCard />.
@@ -209,21 +210,85 @@ function ProductRail({
 /* ------------------------------- Sections ------------------------------- */
 
 export function FeaturedProducts() {
-  const products = PRODUCTS.filter((p) => p.featured);
+  const baseProducts = React.useMemo(() => PRODUCTS.filter((p) => p.featured), []);
+  const [filtered, setFiltered] = React.useState<Product[]>(baseProducts);
+  const railRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollByDir = React.useCallback((dir: 1 | -1) => {
+    const el = railRef.current;
+    if (!el) return;
+    const first = el.firstElementChild as HTMLElement | null;
+    const step = first ? first.offsetWidth + 16 : 296;
+    el.scrollBy({ left: dir * step, behavior: "smooth" });
+  }, []);
+
+  const handleFilterChange = React.useCallback((next: Product[]) => {
+    setFiltered(next);
+  }, []);
+
   return (
-    <ProductRail
+    <motion.section
       id="featured"
-      eyebrow="Handpicked"
-      title={
-        <>
-          Featured <span className="text-gradient-gold">Products</span>
-        </>
-      }
-      description="The best of Playbeat, curated by our team."
-      products={products}
-      actionLabel="View all"
-      actionHref="#featured"
-    />
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="relative scroll-mt-20 py-14 md:scroll-mt-24 md:py-20"
+    >
+      <div className="relative mx-auto max-w-7xl px-4 md:px-6">
+        <SectionHeading
+          eyebrow="Handpicked"
+          title={
+            <>
+              Featured <span className="text-gradient-gold">Products</span>
+            </>
+          }
+          description="The best of Playbeat — sort, filter and find your next favorite."
+          action={
+            <div className="hidden items-center gap-2 md:flex">
+              <button
+                type="button"
+                aria-label="Scroll rail left"
+                onClick={() => scrollByDir(-1)}
+                className="grid size-10 place-items-center rounded-full border border-white/[0.06] bg-white/[0.04] text-white transition-all hover:border-gold hover:bg-gold hover:text-black"
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Scroll rail right"
+                onClick={() => scrollByDir(1)}
+                className="grid size-10 place-items-center rounded-full border border-white/[0.06] bg-white/[0.04] text-white transition-all hover:border-gold hover:bg-gold hover:text-black"
+              >
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
+          }
+        />
+
+        <FilterSortBar products={baseProducts} onFilterChange={handleFilterChange} />
+
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-6 py-10 text-center text-sm text-muted-foreground">
+            No products match your filters. Try widening the price range or clearing categories.
+          </div>
+        ) : (
+          <div
+            ref={railRef}
+            className="no-scrollbar mask-fade-r flex snap-x snap-mandatory gap-4 overflow-x-auto pb-6 pt-2"
+          >
+            {filtered.map((p, i) => (
+              <div
+                key={p.id}
+                className="w-[260px] shrink-0 snap-start sm:w-[280px]"
+              >
+                <ProductCard product={p} index={i} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </motion.section>
   );
 }
 

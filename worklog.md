@@ -611,3 +611,55 @@ Supporting changes:
 4. Product detail route (/product/[id]) — data + Quick View ready to reuse.
 5. A "max 3 reached" toast when compare is full.
 6. Gamification: a loyalty points / XP bar in the header or account menu.
+
+---
+Task ID: 12 (cron review round 5 — compare max-3 fix + filter/sort controls)
+Agent: orchestrator (webDevReview cron)
+Task: QA the live site with agent-browser, fix the compare max-3 UX gap, and add filter/sort controls to the product rails.
+
+## Current project status (assessment)
+- Site is STABLE: `bun run lint` clean, dev log shows `GET / 200`, no runtime/console errors.
+- All features from rounds 1-4 intact (promo bar, scroll progress, social proof, recently viewed, back-to-top, cart/wishlist/compare drawers, search, quick view, currency switch, mega-menu, checkout flow, deal of the day, live activity ticker, mobile nav).
+- QA found ONE minor UX gap: clicking a 4th product to compare was silently ignored (no feedback). Fixed this round.
+
+## Completed modifications (this round)
+
+1. **Fixed compare max-3 UX gap** — previously the 4th compare click was silently ignored.
+   - **Store** (`src/lib/store.ts`): changed `toggleCompare` return type from `void` to `"added" | "removed" | "full"`. It now returns `"full"` when the 3-item cap is reached (state unchanged).
+   - **ProductCard** (`src/components/shared/product-card.tsx`): the compare button handler now reads the return value and shows a destructive toast "Compare is full — Remove a product to add a new one (max 3)." when `result === "full"`.
+   - Verified: after adding 3 products, clicking a 4th shows the "Compare is full" toast.
+
+2. **FilterSortBar** (`src/components/shared/filter-sort-bar.tsx`) — a premium filter & sort control bar:
+   - **Sort options** (5 pill buttons, horizontally scrollable): Featured, Price: Low→High, Price: High→Low, Top Rated, Biggest Discount. Each with a Lucide icon; active state = gold pill.
+   - **Filters toggle** button opens an animated panel (Framer Motion height expand) with:
+     - **Price range** — a dual-thumb shadcn Slider ($0–$max) with live "$X – $Y" display.
+     - **Categories** — 7 toggleable category chips (Games, Software, AI Tools, etc.) with emoji + check icon when active.
+   - **Reset button** — appears when any filter is active, shows active count, clears all.
+   - Live filtering via `useEffect` that applies price range + category filter + sort, calling `onFilterChange` with the result.
+
+3. **Integrated FilterSortBar into FeaturedProducts** (`src/components/sections/product-rails.tsx`):
+   - Rewrote `FeaturedProducts` to use local state (`baseProducts` via useMemo, `filtered` via useState) + the FilterSortBar.
+   - The rail now reactively re-renders with sorted/filtered products.
+   - Added an empty-state message when filters return 0 products ("No products match your filters…").
+   - Kept the scroll arrows in the heading action slot.
+
+## Verification results
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: no page errors, no console warnings.
+- **Compare max-3 toast**: after adding 3 products, clicking a 4th shows "Compare is full — Remove a product to add a new one (max 3)." (verified via radix toast system).
+- **FilterSortBar**: present in Featured section with all 5 sort options + Filters toggle.
+- **Sort**: clicked "Price: Low to High" → order changed correctly (Netflix $9.49 first, then ChatGPT $14.99, then Midjourney $19.99).
+- **Filter panel**: opens with Price range slider ($0–$250) + 7 category chips. Clicking "Games" filtered cards from 8 → 1. Reset button restored to 8.
+- All pre-existing features unaffected.
+
+## Unresolved issues / risks
+- None blocking. The FilterSortBar is currently only on the Featured Products rail (the most prominent one). Other rails (Trending, Flash Deals, Best Sellers, etc.) keep their curated order — by design, since those are editorially-curated lists.
+- The filter state resets when navigating away (no persistence) — acceptable for a browse experience.
+
+## Priority recommendations for next phase
+1. AI-generated product imagery to replace gradient+emoji covers (image-generation skill).
+2. ThemeProvider (next-themes) for proper light/dark toggle.
+3. Product detail route (/product/[id]) — data + Quick View ready to reuse.
+4. Gamification: a loyalty points / XP bar in the header or account menu.
+5. Apply FilterSortBar to a dedicated "All Products" / "Browse" section.
+6. Cookie consent banner (GDPR compliance for a global marketplace).
