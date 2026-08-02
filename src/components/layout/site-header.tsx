@@ -8,8 +8,9 @@
  * ------------------------------------------------------------------ */
 
 import * as React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
   Coins,
@@ -23,12 +24,16 @@ import {
   Search,
   Settings,
   ShoppingBag,
+  Star,
+  ArrowRight,
   User,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { CURRENCIES, useStore, type CurrencyCode } from "@/lib/store";
-import { NAV_LINKS } from "@/lib/data";
+import { NAV_LINKS, CATEGORIES, PRODUCTS } from "@/lib/data";
+import { formatPrice } from "@/lib/format";
+import type { CategorySlug } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -295,6 +300,257 @@ function NavLink({
   );
 }
 
+/* --------------------------- Mega Menu --------------------------- */
+/* Maps a nav label to a category slug so we know which links trigger a mega-menu. */
+const MEGA_MAP: Record<string, CategorySlug> = {
+  Games: "games",
+  Software: "software",
+  "AI Tools": "ai-tools",
+  Subscriptions: "subscriptions",
+  "Gift Cards": "gift-cards",
+  "Free Tools": "free-tools",
+  Bundles: "bundles",
+};
+
+/* Per-category sub-category / filter rows shown in the mega-menu left column. */
+const MEGA_SUBS: Record<CategorySlug, { label: string }[]> = {
+  games: [
+    { label: "PC / Steam" },
+    { label: "PlayStation" },
+    { label: "Xbox" },
+    { label: "Nintendo" },
+    { label: "In-Game Currency" },
+    { label: "Season Passes" },
+  ],
+  software: [
+    { label: "Office & Productivity" },
+    { label: "Antivirus & Security" },
+    { label: "VPN" },
+    { label: "Design & Creative" },
+    { label: "Development" },
+    { label: "Utilities" },
+  ],
+  "ai-tools": [
+    { label: "ChatGPT & OpenAI" },
+    { label: "Midjourney" },
+    { label: "Claude & Anthropic" },
+    { label: "Image Generation" },
+    { label: "Code Assistants" },
+    { label: "API Credits" },
+  ],
+  subscriptions: [
+    { label: "Streaming" },
+    { label: "Music" },
+    { label: "Social" },
+    { label: "Productivity" },
+    { label: "Cloud Storage" },
+    { label: "Gaming" },
+  ],
+  "gift-cards": [
+    { label: "Apple" },
+    { label: "Google Play" },
+    { label: "Amazon" },
+    { label: "Steam" },
+    { label: "PlayStation" },
+    { label: "Netflix" },
+  ],
+  "free-tools": [
+    { label: "Image Converters" },
+    { label: "PDF Tools" },
+    { label: "Developer Tools" },
+    { label: "Calculators" },
+    { label: "Text Utilities" },
+    { label: "Color Tools" },
+  ],
+  bundles: [
+    { label: "AI Mega Bundles" },
+    { label: "Streaming Bundles" },
+    { label: "Software Bundles" },
+    { label: "Game Bundles" },
+    { label: "Creator Packs" },
+    { label: "Business Packs" },
+  ],
+};
+
+function MegaMenuPanel({ slug }: { slug: CategorySlug }) {
+  const currency = useStore((s) => s.currency);
+  const openQuickView = useStore((s) => s.openQuickView);
+  const category = CATEGORIES.find((c) => c.slug === slug)!;
+  const subs = MEGA_SUBS[slug];
+  const featured = PRODUCTS.filter((p) => p.category === slug)
+    .sort(
+      (a, b) =>
+        Number(b.featured) -
+        Number(a.featured) +
+        Number(b.bestSeller ?? false) -
+        Number(a.bestSeller ?? false)
+    )
+    .slice(0, 3);
+
+  return (
+    <div className="flex w-[760px] max-w-[92vw] gap-5 p-5">
+      {/* Left: sub-categories */}
+      <div className="flex w-[56%] flex-col">
+        <div className="mb-3 flex items-center gap-2.5">
+          <span
+            className="grid size-10 place-items-center rounded-xl text-xl"
+            style={{ background: category.gradient }}
+          >
+            {category.emoji}
+          </span>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold text-white">{category.name}</span>
+            <span className="text-[11px] text-muted-foreground">
+              {category.count.toLocaleString()}+ products
+            </span>
+          </div>
+        </div>
+        <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+          {category.description}
+        </p>
+        <div className="grid grid-cols-2 gap-1">
+          {subs.map((sub) => (
+            <button
+              key={sub.label}
+              onClick={() => {
+                document
+                  .getElementById("categories")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-white/75 transition-colors hover:bg-white/[0.06] hover:text-gold"
+            >
+              <span className="size-1 rounded-full bg-gold/50" />
+              {sub.label}
+            </button>
+          ))}
+        </div>
+        <Link
+          href="#categories"
+          className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-gold hover:gap-2.5 transition-all"
+        >
+          View all {category.name} <ArrowRight className="size-3.5" />
+        </Link>
+      </div>
+
+      {/* Right: featured products */}
+      <div className="flex w-[44%] flex-col rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+        <span className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+          Featured in {category.name}
+        </span>
+        <div className="flex flex-col gap-1.5">
+          {featured.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => openQuickView(p)}
+              className="group flex items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-white/[0.05]"
+            >
+              <span
+                className="grid size-9 shrink-0 place-items-center rounded-md text-lg"
+                style={{ background: p.gradient }}
+              >
+                {p.emoji}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-xs font-medium text-white group-hover:text-gold">
+                  {p.name}
+                </span>
+                <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <Star className="size-2.5 fill-gold text-gold" />
+                  {p.rating.toFixed(1)}
+                  <span className="text-white/20">·</span>
+                  <span className="font-semibold text-white/80">
+                    {p.isFree ? "Free" : formatPrice(p.price, currency)}
+                  </span>
+                </span>
+              </span>
+              <ArrowRight className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-hover:text-gold" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* A nav link wrapper that triggers the mega-menu on hover/focus. */
+function MegaNavRegion({
+  label,
+  href,
+  slug,
+}: {
+  label: string;
+  href: string;
+  slug: CategorySlug;
+}) {
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelClose = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+  const scheduleClose = () => {
+    cancelClose();
+    closeTimer.current = setTimeout(() => setOpen(false), 120);
+  };
+
+  useEffect(() => () => cancelClose(), []);
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => {
+        cancelClose();
+        setOpen(true);
+      }}
+      onMouseLeave={scheduleClose}
+      onFocus={() => {
+        cancelClose();
+        setOpen(true);
+      }}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) scheduleClose();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") setOpen(false);
+      }}
+    >
+      <Link
+        href={href}
+        className="group relative inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-white/70 transition-colors duration-200 hover:text-white"
+      >
+        <span>{label}</span>
+        <ChevronDown
+          className={cn(
+            "size-3 text-muted-foreground transition-transform duration-200",
+            open && "rotate-180 text-gold"
+          )}
+        />
+        <span className="pointer-events-none absolute -bottom-1.5 left-0 h-px w-0 bg-gradient-to-r from-gold via-gold/70 to-transparent transition-all duration-300 group-hover:w-full" />
+      </Link>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2"
+          >
+            {/* gold top accent */}
+            <span className="absolute -top-px left-1/2 h-px w-24 -translate-x-1/2 bg-gradient-to-r from-transparent via-gold to-transparent" />
+            <div className="glass-strong overflow-hidden rounded-2xl border border-white/[0.08] shadow-premium">
+              <MegaMenuPanel slug={slug} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 /* ============================ Site Header ============================ */
 export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
@@ -304,10 +560,13 @@ export default function SiteHeader() {
   const wishlist = useStore((s) => s.wishlist);
   const openCart = useStore((s) => s.openCart);
   const openSearch = useStore((s) => s.openSearch);
+  const openWishlist = useStore((s) => s.openWishlist);
+  const currency = useStore((s) => s.currency);
   const promoDismissed = useStore((s) => s.promoDismissed);
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlist.length;
+  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   /* Toggle glass background after scrolling past threshold. */
   useEffect(() => {
@@ -425,7 +684,10 @@ export default function SiteHeader() {
                   type="button"
                   variant="outline"
                   className="h-10 border-white/[0.08] bg-white/[0.04] text-white hover:bg-white/[0.08] hover:text-white"
-                  onClick={closeMobile}
+                  onClick={() => {
+                    closeMobile();
+                    openWishlist();
+                  }}
                 >
                   <Heart className="size-4" /> Wishlist
                 </Button>
@@ -449,14 +711,27 @@ export default function SiteHeader() {
           aria-label="Primary"
           className="ml-1 hidden items-center gap-2 text-sm lg:flex xl:gap-3"
         >
-          {NAV_ITEMS.map((link) => (
-            <NavLink
-              key={link.label}
-              href={link.href}
-              label={link.label}
-              highlight={link.highlight}
-            />
-          ))}
+          {NAV_ITEMS.map((link) => {
+            const megaSlug = MEGA_MAP[link.label];
+            if (megaSlug) {
+              return (
+                <MegaNavRegion
+                  key={link.label}
+                  label={link.label}
+                  href={link.href}
+                  slug={megaSlug}
+                />
+              );
+            }
+            return (
+              <NavLink
+                key={link.label}
+                href={link.href}
+                label={link.label}
+                highlight={link.highlight}
+              />
+            );
+          })}
         </nav>
 
         {/* Desktop search bar (xl+) — centered between nav and right icons */}
@@ -489,20 +764,28 @@ export default function SiteHeader() {
           {/* Wishlist */}
           <IconButton
             label={`Wishlist, ${wishlistCount} item${wishlistCount === 1 ? "" : "s"}`}
+            onClick={openWishlist}
             className="hidden sm:flex"
           >
             <Heart className="size-5" />
             <CountBadge count={wishlistCount} />
           </IconButton>
 
-          {/* Cart */}
-          <IconButton
-            label={`Cart, ${cartCount} item${cartCount === 1 ? "" : "s"}`}
-            onClick={openCart}
-          >
-            <ShoppingBag className="size-5" />
-            <CountBadge count={cartCount} />
-          </IconButton>
+          {/* Cart + live total chip */}
+          <div className="flex items-center">
+            <IconButton
+              label={`Cart, ${cartCount} item${cartCount === 1 ? "" : "s"}`}
+              onClick={openCart}
+            >
+              <ShoppingBag className="size-5" />
+              <CountBadge count={cartCount} />
+            </IconButton>
+            {cartTotal > 0 && (
+              <span className="ml-0.5 hidden whitespace-nowrap rounded-full bg-gold/10 px-2 py-1 text-[11px] font-bold text-gold ring-1 ring-gold/20 sm:inline-block">
+                {formatPrice(cartTotal, currency)}
+              </span>
+            )}
+          </div>
 
           {/* Account (sm+) */}
           <div className="hidden sm:block">

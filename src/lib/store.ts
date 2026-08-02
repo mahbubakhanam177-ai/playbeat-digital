@@ -49,6 +49,10 @@ interface StoreState {
   wishlist: string[];
   toggleWishlist: (id: string) => void;
   isWishlisted: (id: string) => boolean;
+  isWishlistOpen: boolean;
+  openWishlist: () => void;
+  closeWishlist: () => void;
+  clearWishlist: () => void;
 
   /* Search */
   isSearchOpen: boolean;
@@ -115,6 +119,10 @@ export const useStore = create<StoreState>()(
             : [...s.wishlist, id],
         })),
       isWishlisted: (id) => get().wishlist.includes(id),
+      isWishlistOpen: false,
+      openWishlist: () => set({ isWishlistOpen: true }),
+      closeWishlist: () => set({ isWishlistOpen: false }),
+      clearWishlist: () => set({ wishlist: [] }),
 
       isSearchOpen: false,
       openSearch: () => set({ isSearchOpen: true }),

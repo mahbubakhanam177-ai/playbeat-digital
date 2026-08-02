@@ -8,6 +8,7 @@ import PromoBar from "@/components/layout/promo-bar";
 import ScrollProgress from "@/components/layout/scroll-progress";
 import BackToTop from "@/components/layout/back-to-top";
 import SocialProofToast from "@/components/layout/social-proof";
+import WishlistDrawer from "@/components/layout/wishlist-drawer";
 import Hero from "@/components/sections/hero";
 import { TrustBadges, Categories } from "@/components/sections/trust-categories";
 import {
@@ -68,6 +69,7 @@ export default function Home() {
 
       {/* Global overlays */}
       <CartDrawer />
+      <WishlistDrawer />
       <SearchModal />
       <QuickViewModal />
       <MobileNav />

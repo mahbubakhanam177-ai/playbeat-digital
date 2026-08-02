@@ -460,3 +460,59 @@ Supporting changes:
 4. Replace gradient+emoji product covers with AI-generated imagery (image-generation skill) for hyper-realism.
 5. Add a wishlist slide-out drawer (wishlist icon currently only toggles badges).
 6. Filter/sort controls on product rails (price, rating, discount).
+
+---
+Task ID: 9 (cron review round 2 — wishlist drawer + mega-menu + cart total)
+Agent: orchestrator (webDevReview cron)
+Task: QA the live site with agent-browser, fix the dead wishlist button UX gap, add a premium mega-menu, and a live cart total chip.
+
+## Current project status (assessment)
+- Site is STABLE: `bun run lint` clean, dev log shows `GET / 200`, no runtime/console errors.
+- QA found ONE clear UX gap: the header wishlist button did nothing when clicked (only showed a badge count). This was the highest-priority fix.
+- All other features from rounds 1+2 (promo bar, scroll progress, social proof, recently viewed, back-to-top, cart drawer, search, quick view, currency switch) continue to work.
+
+## Completed modifications (this round)
+Added 3 major features (all browser-verified):
+
+1. **WishlistDrawer** (`src/components/layout/wishlist-drawer.tsx`) — a premium slide-out drawer from the LEFT side (mirrors the cart drawer on the right). Features:
+   - Header with heart icon, item count, close button.
+   - Summary strip: total value (in current currency) + potential savings (sum of oldPrice−price discounts).
+   - Item list with animated enter/exit (Framer Motion `layout` + `AnimatePresence`): gradient swatch + emoji, discount badge, product name (click → quick view), category, price + struck old price, "Move to cart" button, remove (trash) button.
+   - Empty state: heart icon with X badge, "Your wishlist is empty" message, "Browse products" CTA.
+   - Footer: "Move all to cart" (gold, moves all paid items → cart → opens cart drawer), "Share list" (copies wishlist text to clipboard), "Clear all".
+   - Fully currency-aware via `formatPrice`.
+
+2. **Mega-menu** (in `src/components/layout/site-header.tsx`) — a premium hover-activated dropdown on the 7 category nav links (Games, Software, AI Tools, Subscriptions, Gift Cards, Free Tools, Bundles). Blog and "💰 Earn with Affiliates" remain simple links. Features:
+   - `MegaNavRegion` wrapper with 120ms close-delay timer (so moving mouse from link to panel doesn't accidentally close), keyboard support (focus opens, Esc closes, blur closes).
+   - `MegaMenuPanel` (760px wide, `.glass-strong`, gold top accent): LEFT column = category emoji/name/count, description, 2-col grid of 6 sub-categories (clickable rows), "View all →" link; RIGHT column = "Featured in {Category}" with 3 mini product cards (gradient swatch, name, star rating, price) that open Quick View on click.
+   - Per-category sub-category data via `MEGA_SUBS` map (e.g. Games → PC/Steam, PlayStation, Xbox, Nintendo, In-Game Currency, Season Passes).
+   - Animated with Framer Motion (fade + slide-down + scale).
+   - Desktop only (lg+); mobile uses the existing sheet nav.
+
+3. **Live cart total chip** (in header) — a gold pill (`bg-gold/10 text-gold ring-1 ring-gold/20`) next to the cart icon that shows the running cart total in the current currency. Only appears when cartTotal > 0. Verified: after moving an item to cart, chip shows "$14.99".
+
+Supporting changes:
+- **Store** (`src/lib/store.ts`): added `isWishlistOpen`/`openWishlist`/`closeWishlist`/`clearWishlist` to the wishlist slice.
+- **SiteHeader**: wired wishlist `IconButton` onClick → `openWishlist`; mobile sheet Wishlist button → `openWishlist`; desktop nav now renders `MegaNavRegion` for category links (via `MEGA_MAP` label→slug lookup) and plain `NavLink` for Blog/Affiliate; added `cartTotal` computation + gold total chip.
+- **page.tsx**: added `<WishlistDrawer />` to the overlays group.
+
+## Verification results
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: no page errors, no console warnings.
+- Mega-menu: hovering "AI Tools" reveals panel with "ChatGPT & OpenAI" sub-categories + "View all AI Tools" link + featured products. All 7 category links have chevron icons; Blog/Affiliate don't.
+- Wishlist drawer: clicking header wishlist button opens the drawer; shows 3 items with total value $44.47, savings $26.51; "Move to cart" moves an item (wishlist 3→2, cart gains item); empty state tested implicitly.
+- Cart total chip: appears in header showing "$14.99" after item moved to cart.
+- Mobile wishlist button in the sheet also opens the drawer.
+- All pre-existing features unaffected.
+
+## Unresolved issues / risks
+- None blocking. The mega-menu is hover-activated on desktop; on touch devices it falls back to the mobile sheet nav (by design — `lg:hidden`).
+- The `MEGA_MAP`/`MEGA_SUBS` are hardcoded in the header file. If categories change in `data.ts`, these need manual sync. Acceptable for now.
+
+## Priority recommendations for next phase
+1. Product comparison feature (compare 2-3 products side-by-side) — a premium marketplace standard.
+2. Filter/sort controls on product rails (price, rating, discount sliders).
+3. A "Deal of the Day" hero spotlight section with a big countdown.
+4. AI-generated product imagery to replace gradient+emoji covers (image-generation skill).
+5. A multi-step checkout modal (cart → details → payment → confirmation) — currently "Proceed to Checkout" only toasts.
+6. ThemeProvider (next-themes) for proper light/dark toggle.
