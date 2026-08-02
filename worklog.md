@@ -1135,3 +1135,39 @@ Task: Integrate Supabase with the Playbeat Digital project using user-provided A
 - Sign up with email/password → Supabase creates the account and sends a confirmation email.
 - Sign in with email/password → user session persists (Supabase handles tokens).
 - When logged in, the header shows the user's email; the account menu has a "Sign Out" option.
+
+---
+Task ID: 23 (Supabase tables created + seeded)
+Agent: orchestrator (main)
+Task: User created 12 tables in Supabase. Verify, fix connection URL, seed products, and create Supabase data layer.
+
+## Completed modifications
+
+1. **Fixed Supabase URL** (`.env.local`):
+   - Was: `https://rfsmvtzxeppgyvdgtltk.supabase.co` (typo from VLM misread)
+   - Correct: `https://rfsmvtzxeppgvdqtatlk.supabase.co` (extracted from JWT `ref` claim)
+   - DNS now resolves, REST API returns 200.
+
+2. **Verified all 12 tables** — all accessible via anon key:
+   - ✅ profiles, categories (7 rows seeded), products, orders, order_items
+   - ✅ wishlist, cart_items, points_history, redeemed_rewards
+   - ✅ notifications, blog_posts, testimonials
+
+3. **Generated seed SQL files** (for user to run in Supabase SQL Editor):
+   - `supabase-seed-products.sql` — 24 products with all fields (price, old_price, rating, tags, flags)
+   - `supabase-seed-extra.sql` — 6 testimonials + 4 blog posts
+   - Note: Products can't be inserted via anon key (RLS only allows select). User needs to run these SQL files in the dashboard.
+
+4. **Created Supabase data layer** (`src/hooks/use-supabase-products.ts`):
+   - `useSupabaseProducts(filter?)` hook — fetches products from Supabase, normalizes rows to the `Product` type.
+   - `fetchProductBySlug(slug)` — fetches a single product.
+   - Falls back gracefully (returns empty array on error, caller uses local data).
+
+## Verification
+- `bun run lint` → 0 errors.
+- All 12 tables accessible, categories seeded with 7 rows.
+- Server serves the page (200) with corrected Supabase URL.
+
+## Next steps (require user action)
+- User needs to run `supabase-seed-products.sql` and `supabase-seed-extra.sql` in the Supabase SQL Editor to populate products/testimonials/blog_posts.
+- After seeding, I'll wire the product rails to fetch from Supabase instead of local data.
