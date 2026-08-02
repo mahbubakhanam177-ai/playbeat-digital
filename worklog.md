@@ -967,3 +967,37 @@ Task: Replace the placeholder Music2 icon / "P" letter logo with the user-upload
 
 ## Unresolved issues / risks
 - None. The logo is a square JPEG which works well in the rounded-square containers. The favicon now points to the JPEG (modern browsers accept JPEG favicons; for legacy IE a .ico would be needed, but that's not a concern for this project).
+
+---
+Task ID: 19 (user request — restructure header into 3 rows)
+Agent: orchestrator (main)
+Task: Restructure the header into 3 rows: (1) announcement bar with specific trust text, (2) logo + affiliate + search + currency + wishlist + cart + login, (3) nav menu with dropdowns.
+
+## Completed modifications
+
+1. **PromoBar** (`src/components/layout/promo-bar.tsx`) — rewrote the announcement bar to show the exact 4 trust items with gold icons, separated by dots:
+   - 🔥 Instant Digital Delivery (Zap icon)
+   - Secure Payments (ShieldCheck icon)
+   - 24/7 Customer Support (Headphones icon)
+   - Premium Accounts at Best Prices (BadgePercent icon)
+   - Dismissible (X button, persists). Mobile shows abbreviated first-word labels.
+
+2. **SiteHeader** (`src/components/layout/site-header.tsx`) — restructured the header return into 3 rows:
+   - **Row 1**: PromoBar (announcement bar, fixed above header, z-[60], h-9).
+   - **Row 2 (middle, h-64px)**: Logo → "💰 Earn with Affiliate" pill (md+) → centered SearchPill (md+, wider now) → right icons: Currency switcher, Loyalty badge (lg+), Notifications, Wishlist, Cart (+ live total chip), **Login / Register** gold button with LogIn icon (sm+).
+   - **Row 3 (bottom, h-44px, lg+ only)**: full nav menu with mega-menu dropdowns (Games, Software, AI Tools, Subscriptions, Gift Cards, Free Tools, Bundles, Blog, Earn with Affiliate). Separated from row 2 by a `border-t`. Hidden on mobile (uses the hamburger sheet).
+   - Header bg changed from transparent to `bg-[#0a0a0a]` when not scrolled (so the 3 rows are always readable over the hero).
+   - Removed the AccountMenu from row 2 (replaced by the explicit Login/Register button). AccountMenu function retained for potential reuse.
+   - Mobile: hamburger sheet unchanged (logo + search + nav links + currency + wishlist/sign-in buttons).
+
+3. **Hero** (`src/components/sections/hero.tsx`) — bumped top padding from `pt-32 md:pt-40` to `pt-36 md:pt-44` to clear the taller 3-row header.
+
+## Verification results
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: no page errors, no console warnings.
+- **Row 1**: "Instant Digital Delivery • Secure Payments • 24/7 Customer Support • Premium Accounts at Best Prices" ✓
+- **Row 2**: Logo, "💰 Earn with Affiliate", Search pill, Currency (USD), Loyalty badge, Notifications, Wishlist, Cart, "Login / Register" button ✓
+- **Row 3**: Games, Software, AI Tools, Subscriptions, Gift Cards, Free Tools, Bundles, Blog, Earn with Affiliate ✓
+- **Mega-menu**: hovering "AI Tools" still reveals the dropdown with sub-categories ✓
+- **Mobile (390px)**: header shows 2 rows (middle + bottom hidden, hamburger present) ✓
+- **VLM verification**: confirmed 3 distinct rows with the exact content as specified.

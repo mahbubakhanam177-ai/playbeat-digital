@@ -641,10 +641,11 @@ export default function SiteHeader() {
         promoDismissed ? "top-0" : "top-9",
         scrolled
           ? "glass-strong border-b border-white/[0.06]"
-          : "border-b border-transparent bg-transparent"
+          : "border-b border-transparent bg-[#0a0a0a]"
       )}
     >
-      <div className="mx-auto flex h-[72px] max-w-[1440px] items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
+      {/* ============ ROW 2 (middle): logo + affiliate + search + icons ============ */}
+      <div className="mx-auto flex h-[64px] max-w-[1440px] items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
         {/* Mobile hamburger */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
@@ -739,11 +740,94 @@ export default function SiteHeader() {
         {/* Logo */}
         <Logo onClick={scrollToTop} />
 
-        {/* Desktop nav (lg+) */}
-        <nav
-          aria-label="Primary"
-          className="ml-1 hidden items-center gap-2 text-sm lg:flex xl:gap-3"
+        {/* Earn with Affiliate (md+) */}
+        <Link
+          href="#affiliate"
+          className="ml-1 hidden shrink-0 items-center rounded-full border border-gold/30 bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold transition-all hover:bg-gold/20 hover:shadow-[0_0_24px_-6px_rgba(255,213,79,0.55)] md:inline-flex"
         >
+          💰 Earn with Affiliate
+        </Link>
+
+        {/* Search bar (center, flex-1, md+) */}
+        <div className="hidden flex-1 justify-center md:flex">
+          <SearchPill
+            onClick={openSearch}
+            className="max-w-[280px] lg:max-w-md xl:max-w-lg"
+          />
+        </div>
+
+        {/* Spacer for mobile (search is icon-only) */}
+        <div className="flex-1 md:hidden" aria-hidden />
+
+        {/* Right actions */}
+        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1 lg:gap-1.5">
+          {/* Search icon (mobile only) */}
+          <IconButton
+            label="Search products"
+            onClick={openSearch}
+            className="md:hidden"
+          >
+            <Search className="size-5" />
+          </IconButton>
+
+          {/* Currency switcher */}
+          <div className="hidden sm:block">
+            <CurrencySwitcher />
+          </div>
+
+          {/* Loyalty badge (lg+) */}
+          <div className="hidden lg:block">
+            <LoyaltyBadge />
+          </div>
+
+          {/* Notifications (sm+) */}
+          <div className="hidden sm:block">
+            <NotificationsDropdown />
+          </div>
+
+          {/* Wishlist */}
+          <IconButton
+            label={`Wishlist, ${wishlistCount} item${wishlistCount === 1 ? "" : "s"}`}
+            onClick={openWishlist}
+          >
+            <Heart className="size-5" />
+            <CountBadge count={wishlistCount} />
+          </IconButton>
+
+          {/* Cart + live total chip */}
+          <div className="flex items-center">
+            <IconButton
+              label={`Cart, ${cartCount} item${cartCount === 1 ? "" : "s"}`}
+              onClick={openCart}
+            >
+              <ShoppingBag className="size-5" />
+              <CountBadge count={cartCount} />
+            </IconButton>
+            {cartTotal > 0 && (
+              <span className="ml-0.5 hidden whitespace-nowrap rounded-full bg-gold/10 px-2 py-1 text-[11px] font-bold text-gold ring-1 ring-gold/20 lg:inline-block">
+                {formatPrice(cartTotal, currency)}
+              </span>
+            )}
+          </div>
+
+          {/* Login / Register button (sm+) */}
+          <Button
+            type="button"
+            className="hidden h-10 gap-1.5 rounded-full bg-gold px-4 text-sm font-semibold text-black transition-all hover:bg-gold/90 hover:shadow-[0_0_24px_-6px_rgba(255,213,79,0.6)] sm:inline-flex"
+          >
+            <LogIn className="size-4" />
+            <span className="hidden lg:inline">Login / Register</span>
+            <span className="lg:hidden">Login</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* ============ ROW 3 (bottom): nav menu with dropdowns (lg+) ============ */}
+      <nav
+        aria-label="Primary"
+        className="hidden border-t border-white/[0.06] lg:block"
+      >
+        <div className="mx-auto flex h-11 max-w-[1440px] items-center gap-1 px-4 sm:px-6 lg:px-8 xl:gap-2">
           {NAV_ITEMS.map((link) => {
             const megaSlug = MEGA_MAP[link.label];
             if (megaSlug) {
@@ -765,77 +849,8 @@ export default function SiteHeader() {
               />
             );
           })}
-        </nav>
-
-        {/* Desktop search bar (xl+) — centered between nav and right icons */}
-        <div className="hidden flex-1 justify-center xl:flex">
-          <SearchPill
-            onClick={openSearch}
-            className="max-w-[220px] 2xl:max-w-sm"
-          />
         </div>
-
-        {/* Spacer pushes right actions to the edge below xl */}
-        <div className="flex-1 xl:hidden" aria-hidden />
-
-        {/* Right actions */}
-        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1 lg:gap-1.5">
-          {/* Search icon (below xl) */}
-          <IconButton
-            label="Search products"
-            onClick={openSearch}
-            className="xl:hidden"
-          >
-            <Search className="size-5" />
-          </IconButton>
-
-          {/* Currency switcher (md+) */}
-          <div className="hidden md:block">
-            <CurrencySwitcher />
-          </div>
-
-          {/* Loyalty badge (md+) */}
-          <div className="hidden md:block">
-            <LoyaltyBadge />
-          </div>
-
-          {/* Notifications (sm+) */}
-          <div className="hidden sm:block">
-            <NotificationsDropdown />
-          </div>
-
-          {/* Wishlist */}
-          <IconButton
-            label={`Wishlist, ${wishlistCount} item${wishlistCount === 1 ? "" : "s"}`}
-            onClick={openWishlist}
-            className="hidden sm:flex"
-          >
-            <Heart className="size-5" />
-            <CountBadge count={wishlistCount} />
-          </IconButton>
-
-          {/* Cart + live total chip */}
-          <div className="flex items-center">
-            <IconButton
-              label={`Cart, ${cartCount} item${cartCount === 1 ? "" : "s"}`}
-              onClick={openCart}
-            >
-              <ShoppingBag className="size-5" />
-              <CountBadge count={cartCount} />
-            </IconButton>
-            {cartTotal > 0 && (
-              <span className="ml-0.5 hidden whitespace-nowrap rounded-full bg-gold/10 px-2 py-1 text-[11px] font-bold text-gold ring-1 ring-gold/20 sm:inline-block">
-                {formatPrice(cartTotal, currency)}
-              </span>
-            )}
-          </div>
-
-          {/* Account (sm+) */}
-          <div className="hidden sm:block">
-            <AccountMenu />
-          </div>
-        </div>
-      </div>
+      </nav>
     </header>
   );
 }

@@ -116,7 +116,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative w-full overflow-hidden bg-background pt-32 pb-20 md:pt-40 md:pb-28"
+      className="relative w-full overflow-hidden bg-background pt-36 pb-20 md:pt-44 md:pb-28"
     >
       {/* ---- Layered futuristic background ---- */}
       <div className="pointer-events-none absolute inset-0 bg-grid opacity-[0.4]" aria-hidden />
