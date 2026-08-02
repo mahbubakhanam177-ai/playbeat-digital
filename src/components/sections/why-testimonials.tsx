@@ -149,7 +149,7 @@ export function WhyChooseUs() {
               {/* Social proof row */}
               <div className="relative mt-6 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
                 <div className="flex -space-x-2">
-                  {["#FFD54F", "#4D8DFF", "#4CAF50", "#B388FF"].map((c) => (
+                  {["#FF1E1E", "#E50914", "#4CAF50", "#B388FF"].map((c) => (
                     <span
                       key={c}
                       className="size-7 rounded-full ring-2 ring-[#0c0c0c]"

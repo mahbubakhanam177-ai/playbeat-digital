@@ -90,7 +90,7 @@ export const CATEGORIES: Category[] = [
     emoji: "🤖",
     count: 312,
     description: "ChatGPT Plus, Midjourney, Claude Pro & API credits",
-    gradient: "linear-gradient(135deg, #FFD54F 0%, #8A6300 100%)",
+    gradient: "linear-gradient(135deg, #FF1E1E 0%, #8A0F0F 100%)",
   },
   {
     slug: "subscriptions",
@@ -128,7 +128,7 @@ export const CATEGORIES: Category[] = [
 
 /* ----------------------------- Products ----------------------------- */
 const G = {
-  gold: "linear-gradient(135deg, #FFE9A8 0%, #FFD54F 50%, #8A6300 100%)",
+  gold: "linear-gradient(135deg, #FF6B6B 0%, #FF1E1E 50%, #8A0F0F 100%)",
   azure: "linear-gradient(135deg, #9CC0FF 0%, #4D8DFF 50%, #0E2A66 100%)",
   violet: "linear-gradient(135deg, #D4B5FF 0%, #6C2BD9 50%, #2B0F5A 100%)",
   rose: "linear-gradient(135deg, #FFB3C1 0%, #FF4D6D 50%, #5A0E22 100%)",

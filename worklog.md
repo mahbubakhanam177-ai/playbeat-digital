@@ -1001,3 +1001,48 @@ Task: Restructure the header into 3 rows: (1) announcement bar with specific tru
 - **Mega-menu**: hovering "AI Tools" still reveals the dropdown with sub-categories ✓
 - **Mobile (390px)**: header shows 2 rows (middle + bottom hidden, hamburger present) ✓
 - **VLM verification**: confirmed 3 distinct rows with the exact content as specified.
+
+---
+Task ID: 20 (user request — apply Black + Red color system)
+Agent: orchestrator (main)
+Task: Replace the gold/blue theme with the exact Playbeat.digital Black + Red color system specified by the user.
+
+## Completed modifications
+
+1. **globals.css** — complete rewrite with the Black + Red palette:
+   - `@theme inline` block maps all Tailwind color tokens (`--color-gold`, `--color-primary`, `--color-border`, etc.) to `:root` variables.
+   - `:root` block defines all values per the spec:
+     - Brand: `--brand: #FF1E1E`, `--brand-2: #FF3B3B`, primary `#FF1E1E`
+     - Backgrounds: `--background: #050505`, `--surface: #0B0B0B`, `--card: #171717`, `--popover: #1E1E1E`
+     - Text: foreground `#FFFFFF`, muted-foreground `#9B9B9B`
+     - Borders: `--border: #2B2B2B`, `--input: #151515`, `--ring: #FF1E1E`
+     - Status: success `#22C55E`, danger `#EF4444`
+   - Utilities updated: `.glass` (rgba(23,23,23,0.6)), `.glass-strong` (rgba(5,5,5,0.9)), `.text-gradient-gold` (red gradient `#FF3B3B→#FF1E1E→#C1121F`), `.glow-gold` (red glow), `.shadow-card-red`, `.shadow-red-glow`, `.shadow-btn-glow`.
+   - Scrollbar: track `#111111`, thumb `#FF1E1E`, hover `#FF3B3B`.
+   - All existing `bg-gold`/`text-gold`/`border-gold` Tailwind classes now resolve to red via the `--color-gold: var(--brand)` mapping — no component changes needed for the core accent swap.
+
+2. **data.ts** — updated product/category gradients that used gold hex values:
+   - `G.gold` gradient: `#FFE9A8→#FFD54F→#8A6300` → `#FF6B6B→#FF1E1E→#8A0F0F` (red).
+   - AI Tools category gradient: `#FFD54F→#8A6300` → `#FF1E1E→#8A0F0F`.
+
+3. **hero.tsx** + **why-testimonials.tsx** — updated avatar dot colors from `#FFD54F`/`#4D8DFF` to `#FF1E1E`/`#E50914`.
+
+4. **loyalty.ts** — Gold tier already uses `text-gold`/`bg-gold` tokens which now resolve to red (correct for the new brand).
+
+## Verification results
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: Login button `backgroundColor` = `rgb(255, 30, 30)` = `#FF1E1E` ✓
+- **VLM confirmation**: "Yes, red is the primary accent color for buttons and highlights. Background: deep black/dark charcoal. Accent/CTA: bright vibrant red (#FF0000) used for Login/Register button, Shop Now button, Earn with Affiliate badges, the word 'Premium' in the headline, price tags, rating stars, notification indicators. Overall vibe: modern, high-contrast dark mode with bold red accent."
+- Note: the dev server (Turbopack) is memory-constrained (4GB RAM, OOM kills during compile). Workaround: pre-warm with curl before agent-browser connects. The red theme renders correctly once compiled.
+
+## Color mapping summary (gold → red)
+Every `gold` token now resolves to brand red:
+- `bg-gold` → `#FF1E1E` background
+- `text-gold` → `#FF1E1E` text
+- `border-gold` → `#FF1E1E` border
+- `from-gold`/`via-gold`/`to-gold` → red gradients
+- `bg-gold/10`, `bg-gold/15` → translucent red
+- `ring-gold/30` → red ring
+- `.text-gradient-gold` → red gradient text
+- `.glow-gold` → red glow shadow
+- Scrollbar thumb → red
